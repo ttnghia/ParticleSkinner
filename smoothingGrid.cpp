@@ -429,15 +429,17 @@ SmoothingGrid::SmoothingGrid(Real h, Real rmin, Real rmax, Real rinit, Real gain
     bbMin[0] = bbMin[1] = bbMin[2] = REAL_MAX;
     bbMax[0] = bbMax[1] = bbMax[2] = -REAL_MAX;
 
-    for(std::vector<SlVector3>::const_iterator i = particles.begin(); i != particles.end(); i++)
-    {
-        bbMin[0] = fmin(bbMin[0], (*i)[0]);
-        bbMin[1] = fmin(bbMin[1], (*i)[1]);
-        bbMin[2] = fmin(bbMin[2], (*i)[2]);
-        bbMax[0] = fmax(bbMax[0], (*i)[0]);
-        bbMax[1] = fmax(bbMax[1], (*i)[1]);
-        bbMax[2] = fmax(bbMax[2], (*i)[2]);
-    }
+    ParallelSTL::min_max_vector<double, SlVector3>(particles, bbMin, bbMax);
+
+    //for(std::vector<SlVector3>::const_iterator i = particles.begin(); i != particles.end(); i++)
+    //{
+    //    bbMin[0] = fmin(bbMin[0], (*i)[0]);
+    //    bbMin[1] = fmin(bbMin[1], (*i)[1]);
+    //    bbMin[2] = fmin(bbMin[2], (*i)[2]);
+    //    bbMax[0] = fmax(bbMax[0], (*i)[0]);
+    //    bbMax[1] = fmax(bbMax[1], (*i)[1]);
+    //    bbMax[2] = fmax(bbMax[2], (*i)[2]);
+    //}
     // increase the bounding box by rmax + something a little bigger than the stencil size
     Real maxFactor = 1;
     if(flags & SmoothingGrid::NEIGHBOR_ANISOTROPY)

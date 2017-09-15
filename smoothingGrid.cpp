@@ -32,7 +32,6 @@
 #include <cmath>
 
 #include "Common.h"
-
 #include "ParallelFuncs.h"
 #include "ParallelSTL.h"
 
@@ -80,7 +79,7 @@ bool SmoothingGrid::computeG(const std::vector<SlVector3>& particles, const std:
             continue;
         }
 
-        s = fmin(maxS, s * gain);
+        s = std::min(maxS, s * gain);
 
         Real e12 = 1.0 + s;
         Real e0  = 1.0 / sqr(e12);
@@ -173,12 +172,12 @@ bool SmoothingGrid::computeG(const std::vector<SlVector3>& particles, Real rmax,
 
         Real maxT = vals[0] / maxStretch;
         vals[0] = 1.0 / (vals[0]);
-        vals[1] = 1.0 / (fmax<Real>(vals[1], maxT));
-        vals[2] = 1.0 / (fmax<Real>(vals[2], maxT));
+        vals[1] = 1.0 / (std::max<Real>(vals[1], maxT));
+        vals[2] = 1.0 / (std::max<Real>(vals[2], maxT));
 
         vals /= cbrt(vals[0] * vals[1] * vals[2]);  // make sure det(G) = 1
                                                     // smooth falloff with decreasing # of neighbors
-        Real alpha = fmax(0.0, (neighbors.size() - minneighbors) / (nneighbors - minneighbors));
+        Real alpha = std::max(0.0, (neighbors.size() - minneighbors) / (nneighbors - minneighbors));
         vals[0] = pow(vals[0], alpha);
         vals[1] = pow(vals[1], alpha);
         vals[2] = pow(vals[2], alpha);
@@ -203,27 +202,27 @@ bool SmoothingGrid::rasterize(const std::vector<SlVector3>& particles)
         bin[1] = (int)((pos[1] - bbMin[1]) / h);
         bin[2] = (int)((pos[2] - bbMin[2]) / h);
 
-        unsigned int imax = fmin(bin[0] + width + 2, nx);
-        unsigned int jmax = fmin(bin[1] + width + 2, ny);
-        unsigned int kmax = fmin(bin[2] + width + 2, nz);
+        unsigned int imax = std::min(bin[0] + width + 2, nx);
+        unsigned int jmax = std::min(bin[1] + width + 2, ny);
+        unsigned int kmax = std::min(bin[2] + width + 2, nz);
 
-        for(unsigned int i = fmax(bin[0] - width, 0); i < imax; i++)
+        for(unsigned int i = std::max(bin[0] - width, 0); i < imax; i++)
         {
-            for(unsigned int j = fmax(bin[1] - width, 0); j < jmax; j++)
+            for(unsigned int j = std::max(bin[1] - width, 0); j < jmax; j++)
             {
                 // for the inner most loop, the i and j coordinates do not change
                 // as we are looking for sqrmag of the distance, we can precomupte
                 // the first two terms and only worry about the last term during the loop
                 // this reduces the computation to 4 adds, one multiply, and a min in each
                 // iteration of the inner most loop.
-                unsigned int k    = fmax(bin[2] - width, 0);
+                unsigned int k    = std::max(bin[2] - width, 0);
                 Real         d    = k * h + bbMin[2] - pos[2];
                 Real         psum = sqr(i * h + bbMin[0] - pos[0]) + sqr(j * h + bbMin[1] - pos[1]);
                 Real*        dptr = &(phi(i, j, k));
 
                 for(; k < kmax; k++, d += h, dptr++)
                 {
-                    (*dptr) = fmin((*dptr), psum + sqr(d));
+                    (*dptr) = std::min((*dptr), psum + sqr(d));
                 }
             }
         }
@@ -274,20 +273,20 @@ bool SmoothingGrid::rasterize(const std::vector<SlVector3>& particles,
         bin[1] = (int)((pos[1] - bbMin[1]) / h);
         bin[2] = (int)((pos[2] - bbMin[2]) / h);
 
-        unsigned int imax = fmin(bin[0] + width + 2, nx);
-        unsigned int jmax = fmin(bin[1] + width + 2, ny);
-        unsigned int kmax = fmin(bin[2] + width + 2, nz);
+        unsigned int imax = std::min(bin[0] + width + 2, nx);
+        unsigned int jmax = std::min(bin[1] + width + 2, ny);
+        unsigned int kmax = std::min(bin[2] + width + 2, nz);
 
-        for(unsigned int i = fmax(bin[0] - width, 0); i < imax; i++)
+        for(unsigned int i = std::max(bin[0] - width, 0); i < imax; i++)
         {
-            for(unsigned int j = fmax(bin[1] - width, 0); j < jmax; j++)
+            for(unsigned int j = std::max(bin[1] - width, 0); j < jmax; j++)
             {
                 // for the inner most loop, the i and j coordinates do not change
                 // as we are looking for sqrmag of the distance, we can precomupte
                 // the first two terms and only worry about the last term during the loop
                 // this reduces the computation to 4 adds, one multiply, and a min in each
                 // iteration of the inner most loop.
-                unsigned int k     = fmax(bin[2] - width, 0);
+                unsigned int k     = std::max(bin[2] - width, 0);
                 Real         d     = k * h + bbMin[2] - pos[2];
                 Real         psum  = sqr(i * h + bbMin[0] - pos[0]) + sqr(j * h + bbMin[1] - pos[1]);
                 Real*        pptr  = &(phi(i, j, k));
@@ -334,27 +333,27 @@ bool SmoothingGrid::rasterize(const std::vector<SlVector3>&   particles,
         bin[1] = (int)((pos[1] - bbMin[1]) / h);
         bin[2] = (int)((pos[2] - bbMin[2]) / h);
 
-        unsigned int imax = fmin(bin[0] + width + 2, nx);
-        unsigned int jmax = fmin(bin[1] + width + 2, ny);
-        unsigned int kmax = fmin(bin[2] + width + 2, nz);
+        unsigned int imax = std::min(bin[0] + width + 2, nx);
+        unsigned int jmax = std::min(bin[1] + width + 2, ny);
+        unsigned int kmax = std::min(bin[2] + width + 2, nz);
 
-        for(unsigned int i = fmax(bin[0] - width, 0); i < imax; i++)
+        for(unsigned int i = std::max(bin[0] - width, 0); i < imax; i++)
         {
-            for(unsigned int j = fmax(bin[1] - width, 0); j < jmax; j++)
+            for(unsigned int j = std::max(bin[1] - width, 0); j < jmax; j++)
             {
                 // for the inner most loop, the i and j coordinates do not change
                 // as we are looking for sqrmag of the distance, we can precomupte
                 // the first two terms and only worry about the last term during the loop
                 // Here the terms are columns from the G matrix, we add a h* the third col
                 // every time we increas k
-                unsigned int k    = fmax(bin[2] - width, 0);
+                unsigned int k    = std::max(bin[2] - width, 0);
                 SlVector3    psum = (i * h + bbMin[0] - pos[0]) * Gc0 + (j * h + bbMin[1] - pos[1]) * Gc1 + (k * h + bbMin[2] - pos[2]) * Gc2;
                 SlVector3    hGc2 = h * Gc2;
                 Real*        dptr = &(phi(i, j, k));
 
                 for(; k < kmax; k++, psum += hGc2, dptr++)
                 {
-                    (*dptr) = fmin((*dptr), sqrMag(psum));
+                    (*dptr) = std::min((*dptr), sqrMag(psum));
                 }
             }
         }
@@ -415,12 +414,12 @@ SmoothingGrid::SmoothingGrid(Real h, Real rmin, Real rmax, Real rinit, Real gain
 
     for(std::vector<SlVector3>::const_iterator i = particles.begin(); i != particles.end(); i++)
     {
-        bbMin[0] = fmin(bbMin[0], (*i)[0]);
-        bbMin[1] = fmin(bbMin[1], (*i)[1]);
-        bbMin[2] = fmin(bbMin[2], (*i)[2]);
-        bbMax[0] = fmax(bbMax[0], (*i)[0]);
-        bbMax[1] = fmax(bbMax[1], (*i)[1]);
-        bbMax[2] = fmax(bbMax[2], (*i)[2]);
+        bbMin[0] = std::min(bbMin[0], (*i)[0]);
+        bbMin[1] = std::min(bbMin[1], (*i)[1]);
+        bbMin[2] = std::min(bbMin[2], (*i)[2]);
+        bbMax[0] = std::max(bbMax[0], (*i)[0]);
+        bbMax[1] = std::max(bbMax[1], (*i)[1]);
+        bbMax[2] = std::max(bbMax[2], (*i)[2]);
     }
     // increase the bounding box by rmax + something a little bigger than the stencil size
     Real maxFactor = 1;
@@ -526,48 +525,38 @@ bool SmoothingGrid::computeBiharmonic()
 Real SmoothingGrid::stepBiharmonic(Real dt)
 {
     Real change = 0.0, updateBand = 3 * h;
-
-    /*for(int i = 2; i < nx - 2; i++)
-       {
+    for(int i = 2; i < nx - 2; i++)
+    {
         for(int j = 2; j < ny - 2; j++)
         {
-            for(int k = 2; k < nz - 2; k++)*/
-    ParallelFuncs::parallel_for<int>(2, nx - 2,
-                                     2, ny - 2,
-                                     2, nz - 2,
-                                     [&](int k, int j, int i)
-                                     {
-                                         if(fabs(phi(i, j, k)) <= updateBand)
-                                         {
-                                             Real phix = cdX(i, j, k, phi, nx, h), phiy = cdY(i, j, k, phi, ny, h), phiz = cdZ(i, j, k, phi, nz, h);
-                                             Real gradMag = sqrt(sqr(phix) + sqr(phiy) + sqr(phiz));
-                                             Real val = biharmonic(i, j, k);
-                                             Real updatedPhi = phi(i, j, k) - val * dt * gradMag;
-                                             updatedPhi = fmin(updatedPhi, phi_min(i, j, k));
-                                             updatedPhi = fmax(updatedPhi, phi_max(i, j, k));
-                                             phi(i, j, k) = updatedPhi;
-                                             //change += fabs(val);
-                                         }
-                                     });
-
-    static int iter = 0;
-    ++iter;
-    //if(flags & VERBOSE) std::cout << "Iter: " << iter << ", change: " << change << std::endl;
-    if(flags & VERBOSE) std::cout << "Iter: " << iter << std::endl;
+            for(int k = 2; k < nz - 2; k++)
+            {
+                if(fabs(phi(i, j, k)) <= updateBand)
+                {
+                    Real phix = cdX(i, j, k, phi, nx, h), phiy = cdY(i, j, k, phi, ny, h), phiz = cdZ(i, j, k, phi, nz, h);
+                    Real gradMag    = sqrt(sqr(phix) + sqr(phiy) + sqr(phiz));
+                    Real val        = biharmonic(i, j, k);
+                    Real updatedPhi = phi(i, j, k) - val * dt * gradMag;
+                    updatedPhi   = std::min(updatedPhi, phi_min(i, j, k));
+                    updatedPhi   = std::max(updatedPhi, phi_max(i, j, k));
+                    phi(i, j, k) = updatedPhi;
+                    change      += fabs(val);
+                }
+            }
+        }
+    }
+    if(flags & VERBOSE) std::cout << "Change in this iteration " << change << std::endl;
     return change;
 }
 
 bool SmoothingGrid::doBiharmonicSmoothing(int iter, Real dt, int redistanceFrequency)
 {
-    timeval startTime, endTime;
-
     redistance(phi, tempPhi, accepted, h);
     for(int i = 0; i < iter; i++)
     {
         computeLaplacian();
         computeBiharmonic();
         stepBiharmonic(dt);
-
         if(i % redistanceFrequency == 0 && redistanceFrequency != 0 && i != 0)
         {
             redistance(phi, tempPhi, accepted, h);
@@ -626,8 +615,8 @@ bool SmoothingGrid::stepMeanCurvature(Real dt)
                 {
                     Real val        = meanCurvature(i, j, k);
                     Real updatedPhi = phi(i, j, k) + val * dt;
-                    updatedPhi   = fmin(updatedPhi, phi_min(i, j, k));
-                    updatedPhi   = fmax(updatedPhi, phi_max(i, j, k));
+                    updatedPhi   = std::min(updatedPhi, phi_min(i, j, k));
+                    updatedPhi   = std::max(updatedPhi, phi_max(i, j, k));
                     phi(i, j, k) = updatedPhi;
                     change      += fabs(val);
                 }
@@ -653,16 +642,15 @@ bool SmoothingGrid::stepLaplacian(Real dt)
                     Real val        = laplacian(i, j, k);
                     Real gradMag    = sqrt(sqr(phix) + sqr(phiy) + sqr(phiz));
                     Real updatedPhi = phi(i, j, k) + val * dt * gradMag;
-                    updatedPhi   = fmin(updatedPhi, phi_min(i, j, k));
-                    updatedPhi   = fmax(updatedPhi, phi_max(i, j, k));
+                    updatedPhi   = std::min(updatedPhi, phi_min(i, j, k));
+                    updatedPhi   = std::max(updatedPhi, phi_max(i, j, k));
                     phi(i, j, k) = updatedPhi;
-                    //change      += fabs(val);
+                    change      += fabs(val);
                 }
             }
         }
     }
-    //if(flags & VERBOSE) std::cout << "Change in this iteration " << change << std::endl;
-    //if(flags & VERBOSE) std::cout << "Change in this iteration " << change << std::endl;
+    if(flags & VERBOSE) std::cout << "Change in this iteration " << change << std::endl;
     return true;
 }
 
@@ -702,9 +690,9 @@ void sweepPoint(SlArray3D<Real>& newPhi, SlArray3D<char>& accepted, int i, int j
             accepted(i, j - 1, k) + accepted(i, j + 1, k) + accepted(i, j, k - 1) + accepted(i, j, k + 1);
     if(!s) return;
 
-    Real a = fmin<Real>(fabs(newPhi(i - 1, j, k)), fabs(newPhi(i + 1, j, k)));
-    Real b = fmin<Real>(fabs(newPhi(i, j - 1, k)), fabs(newPhi(i, j + 1, k)));
-    Real c = fmin<Real>(fabs(newPhi(i, j, k - 1)), fabs(newPhi(i, j, k + 1)));
+    Real a = std::min<Real>(fabs(newPhi(i - 1, j, k)), fabs(newPhi(i + 1, j, k)));
+    Real b = std::min<Real>(fabs(newPhi(i, j - 1, k)), fabs(newPhi(i, j + 1, k)));
+    Real c = std::min<Real>(fabs(newPhi(i, j, k - 1)), fabs(newPhi(i, j, k + 1)));
     sort3val(a, b, c);
     Real x = a + h;
     if(x > b)
@@ -721,8 +709,6 @@ void sweepPoint(SlArray3D<Real>& newPhi, SlArray3D<char>& accepted, int i, int j
 
 void redistance(SlArray3D<Real>& phi, SlArray3D<Real>& newPhi, SlArray3D<char>& accepted, Real h)
 {
-    printf("Doing redistance...\n");
-
     int nx = phi.nx();
     int ny = phi.ny();
     int nz = phi.nz();
@@ -812,25 +798,6 @@ void redistance(SlArray3D<Real>& phi, SlArray3D<Real>& newPhi, SlArray3D<char>& 
         }
     }
 
-#if 1
-    bool forward = true;
-
-    for(int l = 0; l < 8; ++l)
-    {
-        ParallelFuncs::parallel_for<int>(1, nx - 1,
-                                         1, ny - 1,
-                                         1, nz - 1,
-                                         [&](int ii, int jj, int kk)
-                                         {
-                                             int i = forward ? ii : nx - ii - 1;
-                                             int j = forward ? jj : ny - jj - 1;
-                                             int k = forward ? kk : nz - kk - 1;
-
-                                             if(abs(accepted(i, j, k)) % 2 != 1) sweepPoint(newPhi, accepted, i, j, k, h);
-                                         });
-        forward = !forward;
-    }
-#else
     // sweeping
     for(int i = 1; i < nx - 1; i++)
         for(int j = 1; j < ny - 1; j++)
@@ -864,7 +831,6 @@ void redistance(SlArray3D<Real>& phi, SlArray3D<Real>& newPhi, SlArray3D<char>& 
         for(int j = ny - 2; j > 0; j--)
             for(int k = nz - 2; k > 0; k--)
                 if(abs(accepted(i, j, k)) % 2 != 1) sweepPoint(newPhi, accepted, i, j, k, h);
-#endif
 
     phi = newPhi;
 }

@@ -186,7 +186,7 @@ int main(int argc, char** argv)
     unsigned int flags = 0;
     static int   verboseFlag = 0;
     bool         helpFlag = false;
-    int          iterLaplace = 15, iterBiharmonic = 500, redistanceFrequency = 50;
+    int          iterLaplace = 15, iterBiharmonic = 200, redistanceFrequency = 50;
     Real         rmin = -REAL_MAX, rmax = -REAL_MAX, rinit = -REAL_MAX, velGain = 1.0,
                  dtLaplace = -REAL_MAX, dtBiharmonic = -REAL_MAX, dtBiharmonicGain = 1.0;
     Real maxStretch = 4, rratio = 4;

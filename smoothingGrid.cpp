@@ -238,24 +238,24 @@ bool SmoothingGrid::rasterize(const std::vector<SlVector3>& particles)
     //    for(int j = 0; j < ny; j++)
     //    {
     //        for(int k = 0; k < nz; k++)
-    ParallelFuncs::parallel_for<int>(0, nx,
-                                     0, ny,
-                                     0, nz,
-                                     [&](int i, int j, int k)
-                                     {
-                                         if(phi(i, j, k) == REAL_MAX)
-                                         {
-                                             phi_min(i, j, k) = REAL_MAX;
-                                             phi_max(i, j, k) = REAL_MAX;
-                                         }
-                                         else
-                                         {
-                                             Real dist = sqrt(phi(i, j, k));
-                                             phi(i, j, k) = dist - rinit;
-                                             phi_min(i, j, k) = dist - rmin;
-                                             phi_max(i, j, k) = dist - rmax;
-                                         }
-                                     });
+    ParallelFuncs::parallel_for_row_major<int>(0, nx,
+                                               0, ny,
+                                               0, nz,
+                                               [&](int i, int j, int k)
+                                               {
+                                                   if(phi(i, j, k) == REAL_MAX)
+                                                   {
+                                                       phi_min(i, j, k) = REAL_MAX;
+                                                       phi_max(i, j, k) = REAL_MAX;
+                                                   }
+                                                   else
+                                                   {
+                                                       Real dist = sqrt(phi(i, j, k));
+                                                       phi(i, j, k) = dist - rinit;
+                                                       phi_min(i, j, k) = dist - rmin;
+                                                       phi_max(i, j, k) = dist - rmax;
+                                                   }
+                                               });
     return true;
 }
 
@@ -380,24 +380,24 @@ bool SmoothingGrid::rasterize(const std::vector<SlVector3>&   particles,
     //    for(int j = 0; j < ny; j++)
     //    {
     //        for(int k = 0; k < nz; k++)
-    ParallelFuncs::parallel_for<int>(0, nx,
-                                     0, ny,
-                                     0, nz,
-                                     [&](int i, int j, int k)
-                                     {
-                                         if(phi(i, j, k) == REAL_MAX)
-                                         {
-                                             phi_min(i, j, k) = REAL_MAX;
-                                             phi_max(i, j, k) = REAL_MAX;
-                                         }
-                                         else
-                                         {
-                                             Real dist = sqrt(phi(i, j, k));
-                                             phi(i, j, k) = dist - rinit;
-                                             phi_min(i, j, k) = dist - rmin;
-                                             phi_max(i, j, k) = dist - rmax;
-                                         }
-                                     });
+    ParallelFuncs::parallel_for_row_major<int>(0, nx,
+                                               0, ny,
+                                               0, nz,
+                                               [&](int i, int j, int k)
+                                               {
+                                                   if(phi(i, j, k) == REAL_MAX)
+                                                   {
+                                                       phi_min(i, j, k) = REAL_MAX;
+                                                       phi_max(i, j, k) = REAL_MAX;
+                                                   }
+                                                   else
+                                                   {
+                                                       Real dist = sqrt(phi(i, j, k));
+                                                       phi(i, j, k) = dist - rinit;
+                                                       phi_min(i, j, k) = dist - rmin;
+                                                       phi_max(i, j, k) = dist - rmax;
+                                                   }
+                                               });
     return true;
 }
 
@@ -510,18 +510,18 @@ bool SmoothingGrid::computeLaplacian()
     //    for(int j = 1; j < ny - 1; j++)
     //    {
     //        for(int k = 1; k < nz - 1; k++)
-    ParallelFuncs::parallel_for<int>(1, nx - 1,
-                                     1, ny - 1,
-                                     1, nz - 1,
-                                     [&](int i, int j, int k)
-                                     {
-                                         if(fabs(phi(i, j, k)) <= updateBand)
-                                         {
-                                             laplacian(i, j, k) = (phi(i + 1, j, k) + phi(i - 1, j, k) + phi(i, j + 1, k)
-                                                                   + phi(i, j - 1, k) + phi(i, j, k + 1) + phi(i, j, k - 1)
-                                                                   - 6 * phi(i, j, k)) / divisor;
-                                         }
-                                     });
+    ParallelFuncs::parallel_for_row_major<int>(1, nx - 1,
+                                               1, ny - 1,
+                                               1, nz - 1,
+                                               [&](int i, int j, int k)
+                                               {
+                                                   if(fabs(phi(i, j, k)) <= updateBand)
+                                                   {
+                                                       laplacian(i, j, k) = (phi(i + 1, j, k) + phi(i - 1, j, k) + phi(i, j + 1, k)
+                                                                             + phi(i, j - 1, k) + phi(i, j, k + 1) + phi(i, j, k - 1)
+                                                                             - 6 * phi(i, j, k)) / divisor;
+                                                   }
+                                               });
 
     return true;
 }
@@ -534,18 +534,18 @@ bool SmoothingGrid::computeBiharmonic()
     //    for(int j = 2; j < ny - 2; j++)
     //    {
     //        for(int k = 2; k < nz - 2; k++)
-    ParallelFuncs::parallel_for<int>(2, nx - 2,
-                                     2, ny - 2,
-                                     2, nz - 2,
-                                     [&](int i, int j, int k)
-                                     {
-                                         if(fabs(phi(i, j, k)) <= updateBand)
-                                         {
-                                             biharmonic(i, j, k) = (laplacian(i + 1, j, k) + laplacian(i - 1, j, k) + laplacian(i, j + 1, k)
-                                                                    + laplacian(i, j - 1, k) + laplacian(i, j, k + 1) + laplacian(i, j, k - 1)
-                                                                    - 6 * laplacian(i, j, k)) / divider;
-                                         }
-                                     });
+    ParallelFuncs::parallel_for_row_major<int>(2, nx - 2,
+                                               2, ny - 2,
+                                               2, nz - 2,
+                                               [&](int i, int j, int k)
+                                               {
+                                                   if(fabs(phi(i, j, k)) <= updateBand)
+                                                   {
+                                                       biharmonic(i, j, k) = (laplacian(i + 1, j, k) + laplacian(i - 1, j, k) + laplacian(i, j + 1, k)
+                                                                              + laplacian(i, j - 1, k) + laplacian(i, j, k + 1) + laplacian(i, j, k - 1)
+                                                                              - 6 * laplacian(i, j, k)) / divider;
+                                                   }
+                                               });
 
     return true;
 }
@@ -560,23 +560,23 @@ Real SmoothingGrid::stepBiharmonic(Real dt)
     //    for(int j = 2; j < ny - 2; j++)
     //    {
     //        for(int k = 2; k < nz - 2; k++)
-    ParallelFuncs::parallel_for<int>(2, nx - 2,
-                                     2, ny - 2,
-                                     2, nz - 2,
-                                     [&](int i, int j, int k)
-                                     {
-                                         if(fabs(phi(i, j, k)) <= updateBand)
-                                         {
-                                             Real phix = cdX(i, j, k, phi, nx, h), phiy = cdY(i, j, k, phi, ny, h), phiz = cdZ(i, j, k, phi, nz, h);
-                                             Real gradMag = sqrt(sqr(phix) + sqr(phiy) + sqr(phiz));
-                                             Real val = biharmonic(i, j, k);
-                                             Real updatedPhi = phi(i, j, k) - val * dt * gradMag;
-                                             updatedPhi = fmin(updatedPhi, phi_min(i, j, k));
-                                             updatedPhi = fmax(updatedPhi, phi_max(i, j, k));
-                                             phi(i, j, k) = updatedPhi;
-                                             //change += fabs(val);
-                                         }
-                                     });
+    ParallelFuncs::parallel_for_row_major<int>(2, nx - 2,
+                                               2, ny - 2,
+                                               2, nz - 2,
+                                               [&](int i, int j, int k)
+                                               {
+                                                   if(fabs(phi(i, j, k)) <= updateBand)
+                                                   {
+                                                       Real phix = cdX(i, j, k, phi, nx, h), phiy = cdY(i, j, k, phi, ny, h), phiz = cdZ(i, j, k, phi, nz, h);
+                                                       Real gradMag = sqrt(sqr(phix) + sqr(phiy) + sqr(phiz));
+                                                       Real val = biharmonic(i, j, k);
+                                                       Real updatedPhi = phi(i, j, k) - val * dt * gradMag;
+                                                       updatedPhi = fmin(updatedPhi, phi_min(i, j, k));
+                                                       updatedPhi = fmax(updatedPhi, phi_max(i, j, k));
+                                                       phi(i, j, k) = updatedPhi;
+                                                       //change += fabs(val);
+                                                   }
+                                               });
 
     //if(flags & VERBOSE) std::cout << "Change in this iteration " << change << std::endl;
 
@@ -612,34 +612,34 @@ bool SmoothingGrid::computeMeanCurvature()
     //    for(int j = 2; j < ny - 2; j++)
     //    {
     //        for(int k = 2; k < nz - 2; k++)
-    ParallelFuncs::parallel_for<int>(2, nx - 2,
-                                     2, ny - 2,
-                                     2, nz - 2,
-                                     [&](int i, int j, int k)
-                                     {
-                                         if(fabs(phi(i, j, k)) <= updateBand)
-                                         {
-                                             Real phix = cdX(i, j, k, phi, nx, h), phiy = cdY(i, j, k, phi, ny, h), phiz = cdZ(i, j, k, phi, nz, h);
-                                             Real gradMag = sqrt(sqr(phix) + sqr(phiy) + sqr(phiz));
-                                             Real phixx, phiyy, phixy, phizz, phixz, phiyz;
-                                             int ip1 = i + 1, im1 = i - 1, im2 = i - 2, ip2 = i + 2, jp1 = j + 1, jm1 = j - 1, jm2 = j - 2, jp2 = j + 2,
-                                             kp1 = k + 1, km1 = k - 1, km2 = k - 2, kp2 = k + 2;
+    ParallelFuncs::parallel_for_row_major<int>(2, nx - 2,
+                                               2, ny - 2,
+                                               2, nz - 2,
+                                               [&](int i, int j, int k)
+                                               {
+                                                   if(fabs(phi(i, j, k)) <= updateBand)
+                                                   {
+                                                       Real phix = cdX(i, j, k, phi, nx, h), phiy = cdY(i, j, k, phi, ny, h), phiz = cdZ(i, j, k, phi, nz, h);
+                                                       Real gradMag = sqrt(sqr(phix) + sqr(phiy) + sqr(phiz));
+                                                       Real phixx, phiyy, phixy, phizz, phixz, phiyz;
+                                                       int ip1 = i + 1, im1 = i - 1, im2 = i - 2, ip2 = i + 2, jp1 = j + 1, jm1 = j - 1, jm2 = j - 2, jp2 = j + 2,
+                                                       kp1 = k + 1, km1 = k - 1, km2 = k - 2, kp2 = k + 2;
 
-                                             phixx = (-phi(ip2, j, k) + 16 * phi(ip1, j, k) - 30 * phi(i, j, k) + 16 * phi(im1, j, k) - phi(im2, j, k)) / d1;
-                                             phiyy = (-phi(i, jp2, k) + 16 * phi(i, jp1, k) - 30 * phi(i, j, k) + 16 * phi(i, jm1, k) - phi(i, jm2, k)) / d1;
-                                             phizz = (-phi(i, j, kp2) + 16 * phi(i, j, kp1) - 30 * phi(i, j, k) + 16 * phi(i, j, km1) - phi(i, j, km2)) / d1;
-                                             phixy = (-phi(ip2, jp2, k) + 16 * phi(ip1, jp1, k) + phi(im2, jp2, k) - 16 * phi(im1, jp1, k) + phi(ip2, jm2, k)
-                                                      - 16 * phi(ip1, jm1, k) - phi(im2, jm2, k) + 16 * phi(im1, jm1, k)) / d2;
-                                             phiyz = (-phi(i, jp2, kp2) + 16 * phi(i, jp1, kp1) + phi(i, jm2, kp2) - 16 * phi(i, jm1, kp1) + phi(i, jp2, km2)
-                                                      - 16 * phi(i, jp1, km1) - phi(i, jm2, km2) + 16 * phi(i, jm1, km1)) / d2;
-                                             phixz = (-phi(ip2, j, kp2) + 16 * phi(ip1, j, kp1) + phi(im2, j, kp2) - 16 * phi(im1, j, kp1) + phi(ip2, j, km2)
-                                                      - 16 * phi(ip1, j, km1) - phi(im2, j, km2) + 16 * phi(im1, j, km1)) / d2;
+                                                       phixx = (-phi(ip2, j, k) + 16 * phi(ip1, j, k) - 30 * phi(i, j, k) + 16 * phi(im1, j, k) - phi(im2, j, k)) / d1;
+                                                       phiyy = (-phi(i, jp2, k) + 16 * phi(i, jp1, k) - 30 * phi(i, j, k) + 16 * phi(i, jm1, k) - phi(i, jm2, k)) / d1;
+                                                       phizz = (-phi(i, j, kp2) + 16 * phi(i, j, kp1) - 30 * phi(i, j, k) + 16 * phi(i, j, km1) - phi(i, j, km2)) / d1;
+                                                       phixy = (-phi(ip2, jp2, k) + 16 * phi(ip1, jp1, k) + phi(im2, jp2, k) - 16 * phi(im1, jp1, k) + phi(ip2, jm2, k)
+                                                                - 16 * phi(ip1, jm1, k) - phi(im2, jm2, k) + 16 * phi(im1, jm1, k)) / d2;
+                                                       phiyz = (-phi(i, jp2, kp2) + 16 * phi(i, jp1, kp1) + phi(i, jm2, kp2) - 16 * phi(i, jm1, kp1) + phi(i, jp2, km2)
+                                                                - 16 * phi(i, jp1, km1) - phi(i, jm2, km2) + 16 * phi(i, jm1, km1)) / d2;
+                                                       phixz = (-phi(ip2, j, kp2) + 16 * phi(ip1, j, kp1) + phi(im2, j, kp2) - 16 * phi(im1, j, kp1) + phi(ip2, j, km2)
+                                                                - 16 * phi(ip1, j, km1) - phi(im2, j, km2) + 16 * phi(im1, j, km1)) / d2;
 
-                                             meanCurvature(i, j, k) = (sqr(phix) * phiyy - 2 * phix * phiy * phixy + sqr(phiy) * phixx + sqr(phix) * phizz
-                                                                       - 2 * phix * phiz * phixz + sqr(phiz) * phixx + sqr(phiy) * phizz
-                                                                       - 2 * phiy * phiz * phiyz + sqr(phiz) * phiyy) / (sqr(gradMag));
-                                         }
-                                     });
+                                                       meanCurvature(i, j, k) = (sqr(phix) * phiyy - 2 * phix * phiy * phixy + sqr(phiy) * phixx + sqr(phix) * phizz
+                                                                                 - 2 * phix * phiz * phixz + sqr(phiz) * phixx + sqr(phiy) * phizz
+                                                                                 - 2 * phiy * phiz * phiyz + sqr(phiz) * phiyy) / (sqr(gradMag));
+                                                   }
+                                               });
     return true;
 }
 
@@ -652,21 +652,21 @@ bool SmoothingGrid::stepMeanCurvature(Real dt)
            for(int j = 2; j < ny - 2; j++)
            {
                for(int k = 2; k < nz - 2; k++)*/
-    ParallelFuncs::parallel_for<int>(2, nx - 2,
-                                     2, ny - 2,
-                                     2, nz - 2,
-                                     [&](int i, int j, int k)
-                                     {
-                                         if(fabs(phi(i, j, k)) <= updateBand)
-                                         {
-                                             Real val = meanCurvature(i, j, k);
-                                             Real updatedPhi = phi(i, j, k) + val * dt;
-                                             updatedPhi = fmin(updatedPhi, phi_min(i, j, k));
-                                             updatedPhi = fmax(updatedPhi, phi_max(i, j, k));
-                                             phi(i, j, k) = updatedPhi;
-                                             change += fabs(val);
-                                         }
-                                     });
+    ParallelFuncs::parallel_for_row_major<int>(2, nx - 2,
+                                               2, ny - 2,
+                                               2, nz - 2,
+                                               [&](int i, int j, int k)
+                                               {
+                                                   if(fabs(phi(i, j, k)) <= updateBand)
+                                                   {
+                                                       Real val = meanCurvature(i, j, k);
+                                                       Real updatedPhi = phi(i, j, k) + val * dt;
+                                                       updatedPhi = fmin(updatedPhi, phi_min(i, j, k));
+                                                       updatedPhi = fmax(updatedPhi, phi_max(i, j, k));
+                                                       phi(i, j, k) = updatedPhi;
+                                                       change += fabs(val);
+                                                   }
+                                               });
     if(flags & VERBOSE) std::cout << "Change in this iteration " << change << std::endl;
     return true;
 }
@@ -680,23 +680,23 @@ bool SmoothingGrid::stepLaplacian(Real dt)
         for(int j = 2; j < ny - 2; j++)
         {
             for(int k = 2; k < nz - 2; k++)*/
-    ParallelFuncs::parallel_for<int>(2, nx - 2,
-                                     2, ny - 2,
-                                     2, nz - 2,
-                                     [&](int i, int j, int k)
-                                     {
-                                         if(fabs(phi(i, j, k)) <= updateBand)
-                                         {
-                                             Real phix = cdX(i, j, k, phi, nx, h), phiy = cdY(i, j, k, phi, ny, h), phiz = cdZ(i, j, k, phi, nz, h);
-                                             Real val = laplacian(i, j, k);
-                                             Real gradMag = sqrt(sqr(phix) + sqr(phiy) + sqr(phiz));
-                                             Real updatedPhi = phi(i, j, k) + val * dt * gradMag;
-                                             updatedPhi = fmin(updatedPhi, phi_min(i, j, k));
-                                             updatedPhi = fmax(updatedPhi, phi_max(i, j, k));
-                                             phi(i, j, k) = updatedPhi;
-                                             //change      += fabs(val);
-                                         }
-                                     });
+    ParallelFuncs::parallel_for_row_major<int>(2, nx - 2,
+                                               2, ny - 2,
+                                               2, nz - 2,
+                                               [&](int i, int j, int k)
+                                               {
+                                                   if(fabs(phi(i, j, k)) <= updateBand)
+                                                   {
+                                                       Real phix = cdX(i, j, k, phi, nx, h), phiy = cdY(i, j, k, phi, ny, h), phiz = cdZ(i, j, k, phi, nz, h);
+                                                       Real val = laplacian(i, j, k);
+                                                       Real gradMag = sqrt(sqr(phix) + sqr(phiy) + sqr(phiz));
+                                                       Real updatedPhi = phi(i, j, k) + val * dt * gradMag;
+                                                       updatedPhi = fmin(updatedPhi, phi_min(i, j, k));
+                                                       updatedPhi = fmax(updatedPhi, phi_max(i, j, k));
+                                                       phi(i, j, k) = updatedPhi;
+                                                       //change      += fabs(val);
+                                                   }
+                                               });
     //if(flags & VERBOSE) std::cout << "Change in this iteration " << change << std::endl;
 
     static int iter = 0;
@@ -854,17 +854,17 @@ void redistance(SlArray3D<Real>& phi, SlArray3D<Real>& newPhi, SlArray3D<char>& 
 
     for(int l = 0; l < 8; ++l)
     {
-        ParallelFuncs::parallel_for<int>(1, nx - 1,
-                                         1, ny - 1,
-                                         1, nz - 1,
-                                         [&](int ii, int jj, int kk)
-                                         {
-                                             int i = forward ? ii : nx - ii - 1;
-                                             int j = forward ? jj : ny - jj - 1;
-                                             int k = forward ? kk : nz - kk - 1;
+        ParallelFuncs::parallel_for_row_major<int>(1, nx - 1,
+                                                   1, ny - 1,
+                                                   1, nz - 1,
+                                                   [&](int ii, int jj, int kk)
+                                                   {
+                                                       int i = forward ? ii : nx - ii - 1;
+                                                       int j = forward ? jj : ny - jj - 1;
+                                                       int k = forward ? kk : nz - kk - 1;
 
-                                             if(abs(accepted(i, j, k)) % 2 != 1) sweepPoint(newPhi, accepted, i, j, k, h);
-                                         });
+                                                       if(abs(accepted(i, j, k)) % 2 != 1) sweepPoint(newPhi, accepted, i, j, k, h);
+                                                   });
         forward = !forward;
     }
 #else

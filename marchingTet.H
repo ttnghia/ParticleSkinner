@@ -29,6 +29,8 @@
 #include "slUtil.H"
 #include "slArray.H"
 #include "Common.h"
+#include "ParallelObjects.h"
+
 
 class MarchingTet {
 public:
@@ -36,6 +38,11 @@ public:
 	void buildTriangleMesh(const SlArray3D<Real> &phi, std::vector<SlTri> &triangles, std::vector<SlVector3> &meshPts);
 
 protected:
+    ParallelObjects::SpinLock meshLock;
+    ParallelObjects::SpinLock triLock;
+    std::vector<SlTri> triangles_;
+
+
 	int nx_, ny_, nz_;
 	Real h_;
 	SlVector3 lc_, uc_;
@@ -46,6 +53,8 @@ protected:
 	Real catmullrom(const SlArray3D<Real> &phi, SlVector3 &x);
 	bool doTet(int e1, int e2, int e3, int e4, int e5, int e6, Real val0, Real val1, Real val2, Real val3,
 						 std::vector<SlTri> &triangles, std::vector<SlVector3> &meshPts) ;
+
+    void push_triangle(const SlTri& tri);
 };
 
 

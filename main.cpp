@@ -411,7 +411,7 @@ int main(int argc, char** argv)
         (endTime.tv_usec - startTime.tv_usec) * 1.0e-6 << std::endl;
 
 
-    std::cout << "Dumping file with marching tet took " << (endTime.tv_sec - beginTime.tv_sec) +
+    std::cout << "Total: " << (endTime.tv_sec - beginTime.tv_sec) +
     (endTime.tv_usec - beginTime.tv_usec) * 1.0e-6 << std::endl;
 
 

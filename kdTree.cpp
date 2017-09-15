@@ -76,7 +76,7 @@ KDTree::KDTree(const std::vector<SlVector3>& pts)
     }
     npts = pts.size();
 
-    distCache = new double[npts];
+    distCache = new Real[npts];
 }
 
 // The split routines pick the median point in the given sorted array
@@ -92,16 +92,16 @@ void KDTree::xsplit(const std::vector<SlVector3>& pts,
                     int start, int end)
 {
     if(start >= end - 1) return;
-    int    median = start + (end - start) / 2;
-    int    medid = xSortedList[median].i();
-    double medval = pts[medid][0];
-    int    medlistindex = -1;
-    int    i, j;
+    int  median = start + (end - start) / 2;
+    int  medid = xSortedList[median].i();
+    Real medval = pts[medid][0];
+    int  medlistindex = -1;
+    int  i, j;
 
     // Y
     for(i = start, j = 0; i < end; i++)
     {
-        const double& d = pts[ySortedList[i].i()][0];
+        const Real& d = pts[ySortedList[i].i()][0];
         if(d == medval)
         {
             if(ySortedList[i].i() == medid)
@@ -131,7 +131,7 @@ void KDTree::xsplit(const std::vector<SlVector3>& pts,
 
     for(i = start; i < end; i++)
     {
-        const double& d = pts[ySortedList[i].i()][0];
+        const Real& d = pts[ySortedList[i].i()][0];
         if(d == medval)
         {
             if(ySortedList[i].i() == medid) continue;
@@ -162,7 +162,7 @@ void KDTree::xsplit(const std::vector<SlVector3>& pts,
     // Z
     for(i = start, j = 0; i < end; i++)
     {
-        const double& d = pts[zSortedList[i].i()][0];
+        const Real& d = pts[zSortedList[i].i()][0];
         if(d == medval)
         {
             if(zSortedList[i].i() == medid)
@@ -192,7 +192,7 @@ void KDTree::xsplit(const std::vector<SlVector3>& pts,
 
     for(i = start; i < end; i++)
     {
-        const double& d = pts[zSortedList[i].i()][0];
+        const Real& d = pts[zSortedList[i].i()][0];
         if(d == medval)
         {
             if(zSortedList[i].i() == medid) continue;
@@ -232,16 +232,16 @@ void KDTree::ysplit(const std::vector<SlVector3>& pts,
                     int start, int end)
 {
     if(start >= end - 1) return;
-    int    median = start + (end - start) / 2;
-    int    medid = ySortedList[median].i();
-    double medval = pts[medid][1];
-    int    medlistindex = -1;
-    int    i, j;
+    int  median = start + (end - start) / 2;
+    int  medid = ySortedList[median].i();
+    Real medval = pts[medid][1];
+    int  medlistindex = -1;
+    int  i, j;
 
     // X
     for(i = start, j = 0; i < end; i++)
     {
-        const double& d = pts[xSortedList[i].i()][1];
+        const Real& d = pts[xSortedList[i].i()][1];
         if(d == medval)
         {
             if(xSortedList[i].i() == medid)
@@ -271,7 +271,7 @@ void KDTree::ysplit(const std::vector<SlVector3>& pts,
 
     for(i = start; i < end; i++)
     {
-        const double& d = pts[xSortedList[i].i()][1];
+        const Real& d = pts[xSortedList[i].i()][1];
         if(d == medval)
         {
             if(xSortedList[i].i() == medid) continue;
@@ -302,7 +302,7 @@ void KDTree::ysplit(const std::vector<SlVector3>& pts,
     // Z
     for(i = start, j = 0; i < end; i++)
     {
-        const double& d = pts[zSortedList[i].i()][1];
+        const Real& d = pts[zSortedList[i].i()][1];
         if(d == medval)
         {
             if(zSortedList[i].i() == medid)
@@ -332,7 +332,7 @@ void KDTree::ysplit(const std::vector<SlVector3>& pts,
 
     for(i = start; i < end; i++)
     {
-        const double& d = pts[zSortedList[i].i()][1];
+        const Real& d = pts[zSortedList[i].i()][1];
         if(d == medval)
         {
             if(zSortedList[i].i() == medid) continue;
@@ -371,16 +371,16 @@ void KDTree::zsplit(const std::vector<SlVector3>& pts,
                     int start, int end)
 {
     if(start >= end - 1) return;
-    int    median = start + (end - start) / 2;
-    int    medid = zSortedList[median].i();
-    double medval = pts[medid][2];
-    int    medlistindex = -1;
-    int    i, j;
+    int  median = start + (end - start) / 2;
+    int  medid = zSortedList[median].i();
+    Real medval = pts[medid][2];
+    int  medlistindex = -1;
+    int  i, j;
 
     // X
     for(i = start, j = 0; i < end; i++)
     {
-        const double& d = pts[xSortedList[i].i()][2];
+        const Real& d = pts[xSortedList[i].i()][2];
         if(d == medval)
         {
             if(xSortedList[i].i() == medid)
@@ -410,7 +410,7 @@ void KDTree::zsplit(const std::vector<SlVector3>& pts,
 
     for(i = start; i < end; i++)
     {
-        const double& d = pts[xSortedList[i].i()][2];
+        const Real& d = pts[xSortedList[i].i()][2];
         if(d == medval)
         {
             if(xSortedList[i].i() == medid) continue;
@@ -441,7 +441,7 @@ void KDTree::zsplit(const std::vector<SlVector3>& pts,
     // Y
     for(i = start, j = 0; i < end; i++)
     {
-        const double& d = pts[ySortedList[i].i()][2];
+        const Real& d = pts[ySortedList[i].i()][2];
         if(d == medval)
         {
             if(ySortedList[i].i() == medid)
@@ -471,7 +471,7 @@ void KDTree::zsplit(const std::vector<SlVector3>& pts,
 
     for(i = start; i < end; i++)
     {
-        const double& d = pts[ySortedList[i].i()][2];
+        const Real& d = pts[ySortedList[i].i()][2];
         if(d == medval)
         {
             if(ySortedList[i].i() == medid) continue;
@@ -504,7 +504,7 @@ void KDTree::zsplit(const std::vector<SlVector3>& pts,
     xsplit(pts, xSortedList, ySortedList, zSortedList, scratch, median + 1, end);
 }
 
-void checkHeap(std::vector<int>& heap, const double* distCache)
+void checkHeap(std::vector<int>& heap, const Real* distCache)
 {
     for(unsigned int i = 0; i < heap.size(); i++)
     {
@@ -515,7 +515,7 @@ void checkHeap(std::vector<int>& heap, const double* distCache)
     }
 }
 
-void heapRemove(std::vector<int>& heap, const double* distCache)
+void heapRemove(std::vector<int>& heap, const Real* distCache)
 {
     heap.front() = heap.back();
     unsigned int i         = 0;
@@ -536,17 +536,17 @@ void heapRemove(std::vector<int>& heap, const double* distCache)
     //checkHeap(heap, distCache);
 }
 
-void heapAdd(std::vector<int>& heap, const double* distCache, int x)
+void heapAdd(std::vector<int>& heap, const Real* distCache, int x)
 {
     int i = heap.size();
     heap.push_back(x);
-    double di = distCache[x];
+    Real di = distCache[x];
 
     while(true)
     {
         int j = (i - 1) / 2;
         if(j < 0) return;
-        double dj = distCache[heap[j]];
+        Real dj = distCache[heap[j]];
         if(dj >= di) return;
         int tmp = heap[i];
         heap[i] = heap[j];
@@ -557,12 +557,12 @@ void heapAdd(std::vector<int>& heap, const double* distCache, int x)
     //checkHeap(heap, distCache);
 }
 
-void KDTree::neighbors(const std::vector<SlVector3>& pts, const SlVector3& x, int num, double r, std::vector<int>& neighbors)
+void KDTree::neighbors(const std::vector<SlVector3>& pts, const SlVector3& x, int num, Real r, std::vector<int>& neighbors)
 {
     neighbors.clear();
     if(num > 0 && r > 0)
     {
-        double r2 = r * r;
+        Real r2 = r * r;
         neighbors.reserve(num);
         neighborsRecurse(pts, x, num, r, r2, neighbors, 0, npts, 0);
     }
@@ -573,7 +573,7 @@ void KDTree::neighbors(const std::vector<SlVector3>& pts, const SlVector3& x, in
     }
     else if(r > 0)
     {
-        double r2 = r * r;
+        Real r2 = r * r;
         neighborsRecurse(pts, x, r, r2, neighbors, 0, npts, 0);
     }
     else
@@ -582,13 +582,13 @@ void KDTree::neighbors(const std::vector<SlVector3>& pts, const SlVector3& x, in
     }
 }
 
-int KDTree::neighbor(const std::vector<SlVector3>& pts, const SlVector3& x, double r)
+int KDTree::neighbor(const std::vector<SlVector3>& pts, const SlVector3& x, Real r)
 {
-    int    neighbor = -1;
-    double ndist    = DBL_MAX;
+    int  neighbor = -1;
+    Real ndist    = REAL_MAX;
     if(r > 0)
     {
-        double r2 = r * r;
+        Real r2 = r * r;
         neighborRecurse(pts, x, r, r2, neighbor, ndist, 0, npts, 0);
     }
     else
@@ -598,13 +598,13 @@ int KDTree::neighbor(const std::vector<SlVector3>& pts, const SlVector3& x, doub
     return neighbor;
 }
 
-void KDTree::neighborsRecurse(const std::vector<SlVector3>& pts, const SlVector3& x, unsigned int num, double r, double r2, std::vector<int>& neighbors, int start, int end, int plane)
+void KDTree::neighborsRecurse(const std::vector<SlVector3>& pts, const SlVector3& x, unsigned int num, Real r, Real r2, std::vector<int>& neighbors, int start, int end, int plane)
 {
     if(start >= end) return;
-    int    median = start + (end - start) / 2;
-    int    medid  = tree[median];
-    double dist   = x[plane] - pts[medid][plane];
-    double dist2  = dist * dist;
+    int  median = start + (end - start) / 2;
+    int  medid  = tree[median];
+    Real dist   = x[plane] - pts[medid][plane];
+    Real dist2  = dist * dist;
 
     if(dist2 < r2)
     {
@@ -656,10 +656,10 @@ void KDTree::neighborsRecurse(const std::vector<SlVector3>& pts, const SlVector3
 void KDTree::neighborsRecurse(const std::vector<SlVector3>& pts, const SlVector3& x, unsigned int num, std::vector<int>& neighbors, int start, int end, int plane)
 {
     if(start >= end) return;
-    int    median = start + (end - start) / 2;
-    int    medid  = tree[median];
-    double dist   = x[plane] - pts[medid][plane];
-    double dist2  = dist * dist;
+    int  median = start + (end - start) / 2;
+    int  medid  = tree[median];
+    Real dist   = x[plane] - pts[medid][plane];
+    Real dist2  = dist * dist;
 
     bool searchBoth = false;
     if(neighbors.size() < num)
@@ -691,13 +691,13 @@ void KDTree::neighborsRecurse(const std::vector<SlVector3>& pts, const SlVector3
     }
 }
 
-void KDTree::neighborsRecurse(const std::vector<SlVector3>& pts, const SlVector3& x, double r, double r2, std::vector<int>& neighbors, int start, int end, int plane)
+void KDTree::neighborsRecurse(const std::vector<SlVector3>& pts, const SlVector3& x, Real r, Real r2, std::vector<int>& neighbors, int start, int end, int plane)
 {
     if(start >= end) return;
-    int    median = start + (end - start) / 2;
-    int    medid  = tree[median];
-    double dist   = x[plane] - pts[medid][plane];
-    double dist2  = dist * dist;
+    int  median = start + (end - start) / 2;
+    int  medid  = tree[median];
+    Real dist   = x[plane] - pts[medid][plane];
+    Real dist2  = dist * dist;
 
     if(dist2 < r2)
     {
@@ -727,15 +727,15 @@ void KDTree::neighborsRecurse(const std::vector<SlVector3>& pts, const SlVector3
     }
 }
 
-void KDTree::neighborRecurse(const std::vector<SlVector3>& pts, const SlVector3& x, double r, double r2,
-                             int& neighbor, double& ndist, int start, int end, int plane)
+void KDTree::neighborRecurse(const std::vector<SlVector3>& pts, const SlVector3& x, Real r, Real r2,
+                             int& neighbor, Real& ndist, int start, int end, int plane)
 {
     if(start >= end) return;
     int median = start + (end - start) / 2;
     int medid  = tree[median];
 
-    double dist  = x[plane] - pts[medid][plane];
-    double dist2 = dist * dist;
+    Real dist  = x[plane] - pts[medid][plane];
+    Real dist2 = dist * dist;
 
     if(dist2 < r2)
     {
@@ -743,7 +743,7 @@ void KDTree::neighborRecurse(const std::vector<SlVector3>& pts, const SlVector3&
         if(neighbor == -1)
         {
             searchBoth = true;
-            double d = sqrMag(pts[medid] - x);
+            Real d = sqrMag(pts[medid] - x);
             if(d < r2)
             {
                 neighbor = medid;
@@ -753,7 +753,7 @@ void KDTree::neighborRecurse(const std::vector<SlVector3>& pts, const SlVector3&
         else if(dist2 < distCache[neighbor])
         {
             searchBoth = true;
-            double d = sqrMag(pts[medid] - x);
+            Real d = sqrMag(pts[medid] - x);
             if(d < ndist)
             {
                 neighbor = medid;
@@ -786,27 +786,27 @@ void KDTree::neighborRecurse(const std::vector<SlVector3>& pts, const SlVector3&
 }
 
 void KDTree::neighborRecurse(const std::vector<SlVector3>& pts, const SlVector3& x,
-                             int& neighbor, double& ndist, int start, int end, int plane)
+                             int& neighbor, Real& ndist, int start, int end, int plane)
 {
     if(start >= end) return;
     int median = start + (end - start) / 2;
     int medid  = tree[median];
 
-    double dist  = x[plane] - pts[medid][plane];
-    double dist2 = dist * dist;
+    Real dist  = x[plane] - pts[medid][plane];
+    Real dist2 = dist * dist;
 
     bool searchBoth = false;
     if(neighbor == -1)
     {
         searchBoth = true;
-        double d = sqrMag(pts[medid] - x);
+        Real d = sqrMag(pts[medid] - x);
         neighbor = medid;
         ndist    = d;
     }
     else if(dist2 < ndist)
     {
         searchBoth = true;
-        double d = sqrMag(pts[medid] - x);
+        Real d = sqrMag(pts[medid] - x);
         if(d < ndist)
         {
             neighbor = medid;

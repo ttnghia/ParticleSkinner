@@ -1,7 +1,7 @@
 // Copyright (c) 2011, Regents of the University of Utah
-// Copyright (c) 2003-2005, Regents of the University of California.  
+// Copyright (c) 2003-2005, Regents of the University of California.
 // All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
 //     * Redistributions of source code must retain the above copyright
@@ -34,6 +34,8 @@
 class SlVector2;
 class SlVector3;
 
+#include "Common.h"
+
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -58,40 +60,40 @@ public:
   // Constructors
 
   inline SlVector3();
-  inline SlVector3(double d);
-  inline SlVector3(double d0,double d1,double d2);
+  inline SlVector3(Real d);
+  inline SlVector3(Real d0,Real d1,Real d2);
 
   inline SlVector3(const SlVector3 &da);
-  inline SlVector3(const double    *da);
-  // da should point to a double[3] that will be copied
+  inline SlVector3(const Real    *da);
+  // da should point to a Real[3] that will be copied
 
 
   //----------------------------------------------
   // Index operators
 
-  inline double &operator[](unsigned int i)      ;
-  inline double  operator[](unsigned int i) const;
+  inline Real &operator[](unsigned int i)      ;
+  inline Real  operator[](unsigned int i) const;
 
-  inline double &operator()(unsigned int i)      ;
-  inline double  operator()(unsigned int i) const;
+  inline Real &operator()(unsigned int i)      ;
+  inline Real  operator()(unsigned int i) const;
 
-  inline double x() const;
-  inline double y() const;
-  inline double z() const;
+  inline Real x() const;
+  inline Real y() const;
+  inline Real z() const;
 
   //----------------------------------------------
   // Assignment and set
 
-  inline SlVector3 &set(double d);
-  inline SlVector3 &set(double d0, double d1, double d2);
+  inline SlVector3 &set(Real d);
+  inline SlVector3 &set(Real d0, Real d1, Real d2);
 
   inline SlVector3 &set(const SlVector3 &da);
-  inline SlVector3 &set(const double    *da);
-  // da should point to a double[3] that will be copied
+  inline SlVector3 &set(const Real    *da);
+  // da should point to a Real[3] that will be copied
 
-  inline SlVector3 &operator=(double d);
+  inline SlVector3 &operator=(Real d);
   inline SlVector3 &operator=(const SlVector3 &da);
-  inline SlVector3 &operator=(const double    *da);
+  inline SlVector3 &operator=(const Real    *da);
 
 
   //----------------------------------------------
@@ -100,17 +102,17 @@ public:
   inline int operator==(const SlVector3 &da) const;
   inline int operator!=(const SlVector3 &da) const;
 
-  inline int operator==(double d) const;
-  inline int operator!=(double d) const;
+  inline int operator==(Real d) const;
+  inline int operator!=(Real d) const;
 
 
   //----------------------------------------------
   // In place arithmetic
 
-  inline SlVector3 &operator+=(double d);
-  inline SlVector3 &operator-=(double d);
-  inline SlVector3 &operator*=(double d);
-  inline SlVector3 &operator/=(double d);
+  inline SlVector3 &operator+=(Real d);
+  inline SlVector3 &operator-=(Real d);
+  inline SlVector3 &operator*=(Real d);
+  inline SlVector3 &operator/=(Real d);
 
   inline SlVector3 &operator+=(const SlVector3 &da);
   inline SlVector3 &operator-=(const SlVector3 &da);
@@ -139,7 +141,7 @@ public:
   //----------------------------------------------
   // Public data members
 
-  double data[3];
+  Real data[3];
 
   //----------------------------------------------
 };
@@ -156,15 +158,15 @@ inline SlVector3 operator-(const SlVector3 &a,const SlVector3 &b);
 inline SlVector3 operator*(const SlVector3 &a,const SlVector3 &b);
 inline SlVector3 operator/(const SlVector3 &a,const SlVector3 &b);
 
-inline SlVector3 operator+(const SlVector3 &a, double b);
-inline SlVector3 operator-(const SlVector3 &a, double b);
-inline SlVector3 operator*(const SlVector3 &a, double b);
-inline SlVector3 operator/(const SlVector3 &a, double b);
+inline SlVector3 operator+(const SlVector3 &a, Real b);
+inline SlVector3 operator-(const SlVector3 &a, Real b);
+inline SlVector3 operator*(const SlVector3 &a, Real b);
+inline SlVector3 operator/(const SlVector3 &a, Real b);
 
-inline SlVector3 operator+(double a, const SlVector3 &b);
-inline SlVector3 operator-(double a, const SlVector3 &b);
-inline SlVector3 operator*(double a, const SlVector3 &b);
-inline SlVector3 operator/(double a, const SlVector3 &b);
+inline SlVector3 operator+(Real a, const SlVector3 &b);
+inline SlVector3 operator-(Real a, const SlVector3 &b);
+inline SlVector3 operator*(Real a, const SlVector3 &b);
+inline SlVector3 operator/(Real a, const SlVector3 &b);
 
 std::istream &operator>>(std::istream &strm,      SlVector3 &v);
 std::ostream &operator<<(std::ostream &strm,const SlVector3 &v);
@@ -172,17 +174,17 @@ std::ostream &operator<<(std::ostream &strm,const SlVector3 &v);
 //-------------------------------------------------------------------
 // Norm type functions for SlVector3
 
-inline double   l1Norm(const SlVector3 &a);
-inline double   l2Norm(const SlVector3 &a);
-inline double lInfNorm(const SlVector3 &a);
+inline Real   l1Norm(const SlVector3 &a);
+inline Real   l2Norm(const SlVector3 &a);
+inline Real lInfNorm(const SlVector3 &a);
 // Computes the l1, l2 or lInfinity norm of a
 
-inline double    mag(const SlVector3 &a);
-inline double sqrMag(const SlVector3 &a);
+inline Real    mag(const SlVector3 &a);
+inline Real sqrMag(const SlVector3 &a);
 // mag is the l2Norm or magnitude of the vector
 // sqrMag is mag^2, which is faster to compute
 
-inline double normalize(SlVector3 &a);
+inline Real normalize(SlVector3 &a);
 // SETS a = a/mag(a)
 
 
@@ -198,21 +200,21 @@ inline unsigned int midinantAxis(const SlVector3 &v);
 // If multiple comonents have the same value, then the
 // results are not unique.
 
-inline double      dot(const SlVector3 &a,const SlVector3 &b);
+inline Real      dot(const SlVector3 &a,const SlVector3 &b);
 inline SlVector3 cross(const SlVector3 &a,const SlVector3 &b);
 // Compute the dot and cros product of a and b.
 
-inline double box(const SlVector3 &a,const SlVector3 &b,const SlVector3 &c);
+inline Real box(const SlVector3 &a,const SlVector3 &b,const SlVector3 &c);
 // Compute the box (aka tripple) product of a, b, and d.
 
 inline SlVector3 abs(const SlVector3 &a);
 // returns a vector with r[i] = abs(a[i])
 
-inline double sum(const SlVector3 &a);
+inline Real sum(const SlVector3 &a);
 // return a[0]+a[1]+a[2]
 
-inline double max(const SlVector3 &a);
-inline double min(const SlVector3 &a);
+inline Real max(const SlVector3 &a);
+inline Real min(const SlVector3 &a);
 // Returns the max or min component of a.
 
 inline SlVector3 max(const SlVector3 &a,const SlVector3 &b);
@@ -235,37 +237,37 @@ public:
   // Constructors
 
   inline SlVector2();
-  inline SlVector2(double d);
-  inline SlVector2(double d0,double d1);
+  inline SlVector2(Real d);
+  inline SlVector2(Real d0,Real d1);
 
   inline SlVector2(const SlVector2 &da);
-  inline SlVector2(const double    *da);
-  // da should point to a double[2] that will be copied
+  inline SlVector2(const Real    *da);
+  // da should point to a Real[2] that will be copied
 
 
   //----------------------------------------------
   // Index operators
 
-  inline double &operator[](unsigned int i)      ;
-  inline double  operator[](unsigned int i) const;
+  inline Real &operator[](unsigned int i)      ;
+  inline Real  operator[](unsigned int i) const;
 
-  inline double &operator()(unsigned int i)      ;
-  inline double  operator()(unsigned int i) const;
+  inline Real &operator()(unsigned int i)      ;
+  inline Real  operator()(unsigned int i) const;
 
 
   //----------------------------------------------
   // Assignment and set
 
-  inline SlVector2 &set(double d);
-  inline SlVector2 &set(double d0, double d1);
+  inline SlVector2 &set(Real d);
+  inline SlVector2 &set(Real d0, Real d1);
 
   inline SlVector2 &set(const SlVector2 &da);
-  inline SlVector2 &set(const double    *da);
-  // da should point to a double[3] that will be copied
+  inline SlVector2 &set(const Real    *da);
+  // da should point to a Real[3] that will be copied
 
-  inline SlVector2 &operator=(double d);
+  inline SlVector2 &operator=(Real d);
   inline SlVector2 &operator=(const SlVector2 &da);
-  inline SlVector2 &operator=(const double    *da);
+  inline SlVector2 &operator=(const Real    *da);
 
   //----------------------------------------------
   // Comparison operators
@@ -273,17 +275,17 @@ public:
   inline int operator==(const SlVector2 &da) const;
   inline int operator!=(const SlVector2 &da) const;
 
-  inline int operator==(double d) const;
-  inline int operator!=(double d) const;
+  inline int operator==(Real d) const;
+  inline int operator!=(Real d) const;
 
 
   //----------------------------------------------
   // In place arithmetic
 
-  inline SlVector2 &operator+=(double d);
-  inline SlVector2 &operator-=(double d);
-  inline SlVector2 &operator*=(double d);
-  inline SlVector2 &operator/=(double d);
+  inline SlVector2 &operator+=(Real d);
+  inline SlVector2 &operator-=(Real d);
+  inline SlVector2 &operator*=(Real d);
+  inline SlVector2 &operator/=(Real d);
 
   inline SlVector2 &operator+=(const SlVector2 &da);
   inline SlVector2 &operator-=(const SlVector2 &da);
@@ -311,7 +313,7 @@ public:
   //----------------------------------------------
   // Public data members
 
-  double data[2];
+  Real data[2];
 
   //----------------------------------------------
 };
@@ -328,15 +330,15 @@ inline SlVector2 operator-(const SlVector2 &a, const SlVector2 &b);
 inline SlVector2 operator*(const SlVector2 &a, const SlVector2 &b);
 inline SlVector2 operator/(const SlVector2 &a, const SlVector2 &b);
 
-inline SlVector2 operator+(const SlVector2 &a, double b);
-inline SlVector2 operator-(const SlVector2 &a, double b);
-inline SlVector2 operator*(const SlVector2 &a, double b);
-inline SlVector2 operator/(const SlVector2 &a, double b);
+inline SlVector2 operator+(const SlVector2 &a, Real b);
+inline SlVector2 operator-(const SlVector2 &a, Real b);
+inline SlVector2 operator*(const SlVector2 &a, Real b);
+inline SlVector2 operator/(const SlVector2 &a, Real b);
 
-inline SlVector2 operator+(double a, const SlVector2 &b);
-inline SlVector2 operator-(double a, const SlVector2 &b);
-inline SlVector2 operator*(double a, const SlVector2 &b);
-inline SlVector2 operator/(double a, const SlVector2 &b);
+inline SlVector2 operator+(Real a, const SlVector2 &b);
+inline SlVector2 operator-(Real a, const SlVector2 &b);
+inline SlVector2 operator*(Real a, const SlVector2 &b);
+inline SlVector2 operator/(Real a, const SlVector2 &b);
 
 std::istream &operator>>(std::istream &strm,      SlVector2 &v);
 std::ostream &operator<<(std::ostream &strm,const SlVector2 &v);
@@ -344,17 +346,17 @@ std::ostream &operator<<(std::ostream &strm,const SlVector2 &v);
 //-------------------------------------------------------------------
 // Norm type functions for SlVector2
 
-inline double   l1Norm(const SlVector2 &a);
-inline double   l2Norm(const SlVector2 &a);
-inline double lInfNorm(const SlVector2 &a);
+inline Real   l1Norm(const SlVector2 &a);
+inline Real   l2Norm(const SlVector2 &a);
+inline Real lInfNorm(const SlVector2 &a);
 // Computes the l1, l2 or lInfinity norm of a
 
-inline double    mag(const SlVector2 &a);
-inline double sqrMag(const SlVector2 &a);
+inline Real    mag(const SlVector2 &a);
+inline Real sqrMag(const SlVector2 &a);
 // mag is the l2Norm or magnitude of the vector
 // sqrMag is mag^2, which is faster to compute
 
-inline double normalize(SlVector2 &a);
+inline Real normalize(SlVector2 &a);
 // SETS a = a/mag(a)
 
 
@@ -369,18 +371,18 @@ inline unsigned int subinantAxis(const SlVector2 &v);
 // If multiple comonents have the same value, then the
 // results are not unique.
 
-inline double   dot(const SlVector2 &a,const SlVector2 &b);
-inline double cross(const SlVector2 &a,const SlVector2 &b);
+inline Real   dot(const SlVector2 &a,const SlVector2 &b);
+inline Real cross(const SlVector2 &a,const SlVector2 &b);
 // Compute the dot and cros product of a and b.
 
 inline SlVector2 abs(const SlVector2 &a);
 // returns a vector with r[i] = abs(a[i])
 
-inline double sum(const SlVector2 &a);
+inline Real sum(const SlVector2 &a);
 // return a[0]+a[1]
 
-inline double max(const SlVector2 &a);
-inline double min(const SlVector2 &a);
+inline Real max(const SlVector2 &a);
+inline Real min(const SlVector2 &a);
 // Returns the max or min component of a.
 
 inline SlVector2 max(const SlVector2 &a,const SlVector2 &b);
@@ -410,32 +412,32 @@ inline SlVector2 min(const SlVector2 &a,const SlVector2 &b);
 
 // Inline implementation of SlVector3
 
-inline double &SlVector3::operator[](unsigned int i) {
+inline Real &SlVector3::operator[](unsigned int i) {
   DB_CHECK(i<3);
   return data[i];
 }
-inline double &SlVector3::operator()(unsigned int i) {
-  DB_CHECK(i<3);
-  return data[i];
-}
-
-inline double  SlVector3::operator[](unsigned int i) const {
+inline Real &SlVector3::operator()(unsigned int i) {
   DB_CHECK(i<3);
   return data[i];
 }
 
-inline double  SlVector3::operator()(unsigned int i) const {
+inline Real  SlVector3::operator[](unsigned int i) const {
   DB_CHECK(i<3);
   return data[i];
 }
 
-inline double SlVector3::x() const {
+inline Real  SlVector3::operator()(unsigned int i) const {
+  DB_CHECK(i<3);
+  return data[i];
+}
+
+inline Real SlVector3::x() const {
   return data[0];
 }
-inline double SlVector3::y() const {
+inline Real SlVector3::y() const {
   return data[1];
 }
-inline double SlVector3::z() const {
+inline Real SlVector3::z() const {
   return data[2];
 }
 //-------------------------------------------------------------------
@@ -443,11 +445,11 @@ inline double SlVector3::z() const {
 inline SlVector3::SlVector3() {
   data[0] = data[1] = data[2] = 0.0;
 }
-inline SlVector3::SlVector3(double d) {
+inline SlVector3::SlVector3(Real d) {
   data[0] = data[1] = data[2] = d;
 }
 
-inline SlVector3::SlVector3(double d0,double d1,double d2) {
+inline SlVector3::SlVector3(Real d0,Real d1,Real d2) {
   data[0] = d0;
   data[1] = d1;
   data[2] = d2;
@@ -459,7 +461,7 @@ inline SlVector3::SlVector3(const SlVector3 &da) {
   data[2] = da[2];
 }
 
-inline SlVector3::SlVector3(const double *da) {
+inline SlVector3::SlVector3(const Real *da) {
   data[0] = da[0];
   data[1] = da[1];
   data[2] = da[2];
@@ -467,14 +469,14 @@ inline SlVector3::SlVector3(const double *da) {
 
 //-------------------------------------------------------------------
 
-inline SlVector3 &SlVector3::set(double d) {
+inline SlVector3 &SlVector3::set(Real d) {
   data[0] = d;
   data[1] = d;
   data[2] = d;
   return (*this);
 }
 
-inline SlVector3 &SlVector3::set(double d0, double d1, double d2) {
+inline SlVector3 &SlVector3::set(Real d0, Real d1, Real d2) {
   data[0] = d0;
   data[1] = d1;
   data[2] = d2;
@@ -488,7 +490,7 @@ inline SlVector3 &SlVector3::set(const SlVector3 &da) {
   return (*this);
 }
 
-inline SlVector3 &SlVector3::set(const double *da) {
+inline SlVector3 &SlVector3::set(const Real *da) {
   data[0] = da[0];
   data[1] = da[1];
   data[2] = da[2];
@@ -497,7 +499,7 @@ inline SlVector3 &SlVector3::set(const double *da) {
 
 //-------------------------------------------------------------------
 
-inline SlVector3 &SlVector3::operator=(double d) {
+inline SlVector3 &SlVector3::operator=(Real d) {
   return set(d);
 }
 
@@ -505,7 +507,7 @@ inline SlVector3 &SlVector3::operator=(const SlVector3 &da) {
   return set(da);
 }
 
-inline SlVector3 &SlVector3::operator=(const double *da) {
+inline SlVector3 &SlVector3::operator=(const Real *da) {
   return set(da);
 }
 
@@ -523,13 +525,13 @@ inline int SlVector3::operator!=(const SlVector3 &da) const {
 	  (data[2] != da[2]));
 }
 
-inline int SlVector3::operator==(double d) const {
+inline int SlVector3::operator==(Real d) const {
   return ((data[0] == d) &&
 	  (data[1] == d) &&
 	  (data[2] == d));
 }
 
-inline int SlVector3::operator!=(double d) const {
+inline int SlVector3::operator!=(Real d) const {
   return ((data[0] != d) ||
 	  (data[1] != d) ||
 	  (data[2] != d));
@@ -537,28 +539,28 @@ inline int SlVector3::operator!=(double d) const {
 
 //-------------------------------------------------------------------
 
-inline SlVector3 &SlVector3::operator+=(double d) {
+inline SlVector3 &SlVector3::operator+=(Real d) {
   data[0] += d;
   data[1] += d;
   data[2] += d;
   return (*this);
 }
 
-inline SlVector3 &SlVector3::operator-=(double d) {
+inline SlVector3 &SlVector3::operator-=(Real d) {
   data[0] -= d;
   data[1] -= d;
   data[2] -= d;
   return (*this);
 }
 
-inline SlVector3 &SlVector3::operator*=(double d) {
+inline SlVector3 &SlVector3::operator*=(Real d) {
   data[0] *= d;
   data[1] *= d;
   data[2] *= d;
   return (*this);
 }
 
-inline SlVector3 &SlVector3::operator/=(double d) {
+inline SlVector3 &SlVector3::operator/=(Real d) {
   data[0] /= d;
   data[1] /= d;
   data[2] /= d;
@@ -648,66 +650,66 @@ inline SlVector3 operator/(const SlVector3 &a,const SlVector3 &b){
 
 //-------------------------------------------------------------------
 
-inline SlVector3 operator+(const SlVector3 &a,double b){
+inline SlVector3 operator+(const SlVector3 &a,Real b){
   return SlVector3(a[0] + b, a[1] + b, a[2] + b);
 }
 
-inline SlVector3 operator-(const SlVector3 &a,double b){
+inline SlVector3 operator-(const SlVector3 &a,Real b){
   return SlVector3(a[0] - b, a[1] - b, a[2] - b);
 }
 
-inline SlVector3 operator*(const SlVector3 &a,double b){
+inline SlVector3 operator*(const SlVector3 &a,Real b){
   return SlVector3(a[0] * b, a[1] * b, a[2] * b);
 }
 
-inline SlVector3 operator/(const SlVector3 &a,double b){
+inline SlVector3 operator/(const SlVector3 &a,Real b){
   return SlVector3(a[0] / b, a[1] / b, a[2] / b);
 }
 
 //-------------------------------------------------------------------
 
-inline SlVector3 operator+(double a,const SlVector3 &b){
+inline SlVector3 operator+(Real a,const SlVector3 &b){
   return SlVector3(a + b[0], a + b[1], a + b[2]);
 }
 
-inline SlVector3 operator-(double a,const SlVector3 &b){
+inline SlVector3 operator-(Real a,const SlVector3 &b){
   return SlVector3(a - b[0], a - b[1], a - b[2]);
 }
 
-inline SlVector3 operator*(double a,const SlVector3 &b){
+inline SlVector3 operator*(Real a,const SlVector3 &b){
   return SlVector3(a * b[0], a * b[1], a * b[2]);
 }
 
-inline SlVector3 operator/(double a,const SlVector3 &b){
+inline SlVector3 operator/(Real a,const SlVector3 &b){
   return SlVector3(a / b[0], a / b[1], a / b[2]);
 }
 
 //-------------------------------------------------------------------
 
-inline double l1Norm(const SlVector3 &a) {
+inline Real l1Norm(const SlVector3 &a) {
   return (((a[0]>0)?a[0]:-a[0])+
 	  ((a[1]>0)?a[1]:-a[1])+
 	  ((a[2]>0)?a[2]:-a[2]));
 }
 
-inline double l2Norm(const SlVector3 &a) {
+inline Real l2Norm(const SlVector3 &a) {
   return sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
 }
 
-inline double lInfNorm(const SlVector3 &a) {
+inline Real lInfNorm(const SlVector3 &a) {
   return max(abs(a));
 }
 
-inline double mag(const SlVector3 &a) {
+inline Real mag(const SlVector3 &a) {
   return sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
 }
 
-inline double sqrMag(const SlVector3 &a) {
+inline Real sqrMag(const SlVector3 &a) {
   return (a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
 }
 
-inline double normalize(SlVector3 &a) {
-  register double m = mag(a);
+inline Real normalize(SlVector3 &a) {
+  register Real m = mag(a);
   if (m != 0) a /= m;
   return m;
 }
@@ -715,7 +717,7 @@ inline double normalize(SlVector3 &a) {
 //-------------------------------------------------------------------
 
 inline unsigned int dominantAxis(const SlVector3 &v) {
-  register double x,y,z;
+  register Real x,y,z;
   if (v[0]>0) x = v[0]; else x = -v[0];
   if (v[1]>0) y = v[1]; else y = -v[1];
   if (v[2]>0) z = v[2]; else z = -v[2];
@@ -723,7 +725,7 @@ inline unsigned int dominantAxis(const SlVector3 &v) {
 }
 
 inline unsigned int subinantAxis(const SlVector3 &v) {
-  register double x,y,z;
+  register Real x,y,z;
   if (v[0]>0) x = v[0]; else x = -v[0];
   if (v[1]>0) y = v[1]; else y = -v[1];
   if (v[2]>0) z = v[2]; else z = -v[2];
@@ -731,7 +733,7 @@ inline unsigned int subinantAxis(const SlVector3 &v) {
 }
 
 inline unsigned int midinantAxis(const SlVector3 &v) {
-  register double x,y,z;
+  register Real x,y,z;
   if (v[0]>0) x = v[0]; else x = -v[0];
   if (v[1]>0) y = v[1]; else y = -v[1];
   if (v[2]>0) z = v[2]; else z = -v[2];
@@ -750,7 +752,7 @@ inline unsigned int midinantAxis(const SlVector3 &v) {
 
 //-------------------------------------------------------------------
 
-inline double dot(const SlVector3 &a,const SlVector3 &b) {
+inline Real dot(const SlVector3 &a,const SlVector3 &b) {
   return (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]);
 }
 
@@ -762,7 +764,7 @@ inline SlVector3 cross(const SlVector3 &a,const SlVector3 &b) {
 
 //-------------------------------------------------------------------
 
-inline double box(const SlVector3 &a,const SlVector3 &b,const SlVector3 &c) {
+inline Real box(const SlVector3 &a,const SlVector3 &b,const SlVector3 &c) {
   return dot(cross(a,b),c);
 }
 
@@ -774,17 +776,17 @@ inline SlVector3 abs(const SlVector3 &a) {
 		    ((a[2]>0)?a[2]:-a[2]));
 }
 
-inline double sum(const SlVector3 &a) {
+inline Real sum(const SlVector3 &a) {
   return a[0]+a[1]+a[2];
 }
 
 //-------------------------------------------------------------------
 
-inline double max(const SlVector3 &a) {
+inline Real max(const SlVector3 &a) {
   return ((a[0]>a[1])?((a[0]>a[2])?a[0]:a[2]):(a[1]>a[2])?a[1]:a[2]);
 }
 
-inline double min(const SlVector3 &a) {
+inline Real min(const SlVector3 &a) {
   return ((a[0]<a[1])?((a[0]<a[2])?a[0]:a[2]):(a[1]<a[2])?a[1]:a[2]);
 }
 
@@ -808,21 +810,21 @@ inline SlVector3 min(const SlVector3 &a,const SlVector3 &b) {
 
 // Inline implementation of SlVector2
 
-inline double &SlVector2::operator[](unsigned int i) {
+inline Real &SlVector2::operator[](unsigned int i) {
   DB_CHECK(i<2);
   return data[i];
 }
-inline double &SlVector2::operator()(unsigned int i) {
-  DB_CHECK(i<2);
-  return data[i];
-}
-
-inline double  SlVector2::operator[](unsigned int i) const {
+inline Real &SlVector2::operator()(unsigned int i) {
   DB_CHECK(i<2);
   return data[i];
 }
 
-inline double  SlVector2::operator()(unsigned int i) const {
+inline Real  SlVector2::operator[](unsigned int i) const {
+  DB_CHECK(i<2);
+  return data[i];
+}
+
+inline Real  SlVector2::operator()(unsigned int i) const {
   DB_CHECK(i<2);
   return data[i];
 }
@@ -832,11 +834,11 @@ inline double  SlVector2::operator()(unsigned int i) const {
 inline SlVector2::SlVector2() {
   data[0] = data[1] = 0.0;
 }
-inline SlVector2::SlVector2(double d) {
+inline SlVector2::SlVector2(Real d) {
   data[0] = data[1] = d;
 }
 
-inline SlVector2::SlVector2(double d0,double d1) {
+inline SlVector2::SlVector2(Real d0,Real d1) {
   data[0] = d0;
   data[1] = d1;
 }
@@ -846,20 +848,20 @@ inline SlVector2::SlVector2(const SlVector2 &da) {
   data[1] = da[1];
 }
 
-inline SlVector2::SlVector2(const double *da) {
+inline SlVector2::SlVector2(const Real *da) {
   data[0] = da[0];
   data[1] = da[1];
 }
 
 //-------------------------------------------------------------------
 
-inline SlVector2 &SlVector2::set(double d) {
+inline SlVector2 &SlVector2::set(Real d) {
   data[0] = d;
   data[1] = d;
   return (*this);
 }
 
-inline SlVector2 &SlVector2::set(double d0, double d1) {
+inline SlVector2 &SlVector2::set(Real d0, Real d1) {
   data[0] = d0;
   data[1] = d1;
   return (*this);
@@ -871,7 +873,7 @@ inline SlVector2 &SlVector2::set(const SlVector2 &da) {
   return (*this);
 }
 
-inline SlVector2 &SlVector2::set(const double *da) {
+inline SlVector2 &SlVector2::set(const Real *da) {
   data[0] = da[0];
   data[1] = da[1];
   return (*this);
@@ -879,7 +881,7 @@ inline SlVector2 &SlVector2::set(const double *da) {
 
 //-------------------------------------------------------------------
 
-inline SlVector2 &SlVector2::operator=(double d) {
+inline SlVector2 &SlVector2::operator=(Real d) {
   return set(d);
 }
 
@@ -887,7 +889,7 @@ inline SlVector2 &SlVector2::operator=(const SlVector2 &da) {
   return set(da);
 }
 
-inline SlVector2 &SlVector2::operator=(const double *da) {
+inline SlVector2 &SlVector2::operator=(const Real *da) {
   return set(da);
 }
 
@@ -903,37 +905,37 @@ inline int SlVector2::operator!=(const SlVector2 &da) const {
 	  (data[1] != da[1]));
 }
 
-inline int SlVector2::operator==(double d) const {
+inline int SlVector2::operator==(Real d) const {
   return ((data[0] == d) &&
 	  (data[1] == d));
 }
 
-inline int SlVector2::operator!=(double d) const {
+inline int SlVector2::operator!=(Real d) const {
   return ((data[0] != d) ||
 	  (data[1] != d));
 }
 
 //-------------------------------------------------------------------
 
-inline SlVector2 &SlVector2::operator+=(double d) {
+inline SlVector2 &SlVector2::operator+=(Real d) {
   data[0] += d;
   data[1] += d;
   return (*this);
 }
 
-inline SlVector2 &SlVector2::operator-=(double d) {
+inline SlVector2 &SlVector2::operator-=(Real d) {
   data[0] -= d;
   data[1] -= d;
   return (*this);
 }
 
-inline SlVector2 &SlVector2::operator*=(double d) {
+inline SlVector2 &SlVector2::operator*=(Real d) {
   data[0] *= d;
   data[1] *= d;
   return (*this);
 }
 
-inline SlVector2 &SlVector2::operator/=(double d) {
+inline SlVector2 &SlVector2::operator/=(Real d) {
   data[0] /= d;
   data[1] /= d;
   return (*this);
@@ -1015,65 +1017,65 @@ inline SlVector2 operator/(const SlVector2 &a,const SlVector2 &b){
 
 //-------------------------------------------------------------------
 
-inline SlVector2 operator+(const SlVector2 &a,double b){
+inline SlVector2 operator+(const SlVector2 &a,Real b){
   return SlVector2(a[0] + b, a[1] + b);
 }
 
-inline SlVector2 operator-(const SlVector2 &a,double b){
+inline SlVector2 operator-(const SlVector2 &a,Real b){
   return SlVector2(a[0] - b, a[1] - b);
 }
 
-inline SlVector2 operator*(const SlVector2 &a,double b){
+inline SlVector2 operator*(const SlVector2 &a,Real b){
   return SlVector2(a[0] * b, a[1] * b);
 }
 
-inline SlVector2 operator/(const SlVector2 &a,double b){
+inline SlVector2 operator/(const SlVector2 &a,Real b){
   return SlVector2(a[0] / b, a[1] / b);
 }
 
 //-------------------------------------------------------------------
 
-inline SlVector2 operator+(double a,const SlVector2 &b){
+inline SlVector2 operator+(Real a,const SlVector2 &b){
   return SlVector2(a + b[0], a + b[1]);
 }
 
-inline SlVector2 operator-(double a,const SlVector2 &b){
+inline SlVector2 operator-(Real a,const SlVector2 &b){
   return SlVector2(a - b[0], a - b[1]);
 }
 
-inline SlVector2 operator*(double a,const SlVector2 &b){
+inline SlVector2 operator*(Real a,const SlVector2 &b){
   return SlVector2(a * b[0], a * b[1]);
 }
 
-inline SlVector2 operator/(double a,const SlVector2 &b){
+inline SlVector2 operator/(Real a,const SlVector2 &b){
   return SlVector2(a / b[0], a / b[1]);
 }
 
 //-------------------------------------------------------------------
 
-inline double l1Norm(const SlVector2 &a) {
+inline Real l1Norm(const SlVector2 &a) {
   return (((a[0]>0)?a[0]:-a[0])+
 	  ((a[1]>0)?a[1]:-a[1]));
 }
 
-inline double l2Norm(const SlVector2 &a) {
+inline Real l2Norm(const SlVector2 &a) {
   return sqrt(a[0] * a[0] + a[1] * a[1]);
 }
 
-inline double lInfNorm(const SlVector2 &a) {
+inline Real lInfNorm(const SlVector2 &a) {
   return max(abs(a));
 }
 
-inline double mag(const SlVector2 &a) {
+inline Real mag(const SlVector2 &a) {
   return sqrt(a[0] * a[0] + a[1] * a[1]);
 }
 
-inline double sqrMag(const SlVector2 &a) {
+inline Real sqrMag(const SlVector2 &a) {
   return (a[0] * a[0] + a[1] * a[1]);
 }
 
-inline double normalize(SlVector2 &a) {
-  register double m = mag(a);
+inline Real normalize(SlVector2 &a) {
+  register Real m = mag(a);
   if (m != 0) a /= m;
   return m;
 }
@@ -1081,14 +1083,14 @@ inline double normalize(SlVector2 &a) {
 //-------------------------------------------------------------------
 
 inline unsigned int dominantAxis(const SlVector2 &v) {
-  register double x,y;
+  register Real x,y;
   if (v[0]>0) x = v[0]; else x = -v[0];
   if (v[1]>0) y = v[1]; else y = -v[1];
   return ( x > y ) ? 0 : 1;
 }
 
 inline unsigned int subinantAxis(const SlVector2 &v) {
-  register double x,y;
+  register Real x,y;
   if (v[0]>0) x = v[0]; else x = -v[0];
   if (v[1]>0) y = v[1]; else y = -v[1];
   return ( x < y ) ? 0 : 1;
@@ -1096,11 +1098,11 @@ inline unsigned int subinantAxis(const SlVector2 &v) {
 
 //-------------------------------------------------------------------
 
-inline double dot(const SlVector2 &a,const SlVector2 &b) {
+inline Real dot(const SlVector2 &a,const SlVector2 &b) {
   return (a[0] * b[0] + a[1] * b[1]);
 }
 
-inline double cross(const SlVector2 &a,const SlVector2 &b) {
+inline Real cross(const SlVector2 &a,const SlVector2 &b) {
   return (a[0] * b[1] - b[0] * a[1]);
 }
 
@@ -1111,17 +1113,17 @@ inline SlVector2 abs(const SlVector2 &a) {
 		    ((a[1]>0)?a[1]:-a[1]));
 }
 
-inline double sum(const SlVector2 &a) {
+inline Real sum(const SlVector2 &a) {
   return a[0]+a[1];
 }
 
 //-------------------------------------------------------------------
 
-inline double max(const SlVector2 &a) {
+inline Real max(const SlVector2 &a) {
   return ((a[0]>a[1])? a[0] : a[1]);
 }
 
-inline double min(const SlVector2 &a) {
+inline Real min(const SlVector2 &a) {
   return ((a[0]<a[1])? a[0] : a[1]);
 }
 

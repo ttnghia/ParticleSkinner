@@ -1,6 +1,6 @@
 // Copyright (c) 2011, Regents of the University of Utah
 // All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
 //     * Redistributions of source code must retain the above copyright
@@ -26,21 +26,22 @@
 #ifndef KDTREE_H
 #define KDTREE_H
 #include <vector>
+#include "Common.h"
 #include "slVector.H"
 
 class IntDoublePair {
 	int _i;
-	double _d;
+	Real _d;
  public:
-	IntDoublePair(int i, double d): _i(i), _d(d){};
+	IntDoublePair(int i, Real d): _i(i), _d(d){};
 	IntDoublePair() {};
 	IntDoublePair &operator=(IntDoublePair id) {_i = id._i, _d = id._d; return *this;};
 	inline int i() const {return _i;}
 	inline int &i() {return _i;}
-	inline double d() const {return _d;}
-	inline double &d() {return _d;}
+	inline Real d() const {return _d;}
+	inline Real &d() {return _d;}
 };
-	
+
 class KDTree {
  public:
 	// Initialize kdtree for point in pts.  The points are *not* duplicated.  The tree only stores indicies into this vector.
@@ -49,31 +50,31 @@ class KDTree {
 
 	// Return the num nearest neighbors within distance r of the query point.  If r <= 0, returns the num nearest neighbors
 	// if num <= 0 returns all points within a sphere of radius r of the query point.
-	void neighbors(const std::vector<SlVector3> &pts, const SlVector3 &x, int num, double r, std::vector<int> &neighbors);
+	void neighbors(const std::vector<SlVector3> &pts, const SlVector3 &x, int num, Real r, std::vector<int> &neighbors);
 
 	// Returns the nearest neighbor.  If r > 0 neighbor must be within distance distance r, otherwise returns -1.
-	int neighbor(const std::vector<SlVector3> &pts, const SlVector3 &x, double r);
+	int neighbor(const std::vector<SlVector3> &pts, const SlVector3 &x, Real r);
 
  private:
 	int *tree;
 	int npts;
-	double *distCache;
-	void xsplit(const std::vector<SlVector3> &pts, std::vector<IntDoublePair> &xSortedList, std::vector<IntDoublePair> &ySortedList, 
+	Real *distCache;
+	void xsplit(const std::vector<SlVector3> &pts, std::vector<IntDoublePair> &xSortedList, std::vector<IntDoublePair> &ySortedList,
 							std::vector<IntDoublePair> &zSortedList, std::vector<IntDoublePair> &scratch, int start, int end);
-	void ysplit(const std::vector<SlVector3> &pts, std::vector<IntDoublePair> &xSortedList, std::vector<IntDoublePair> &ySortedList, 
+	void ysplit(const std::vector<SlVector3> &pts, std::vector<IntDoublePair> &xSortedList, std::vector<IntDoublePair> &ySortedList,
 							std::vector<IntDoublePair> &zSortedList, std::vector<IntDoublePair> &scratch, int start, int end);
-	void zsplit(const std::vector<SlVector3> &pts, std::vector<IntDoublePair> &xSortedList, std::vector<IntDoublePair> &ySortedList, 
+	void zsplit(const std::vector<SlVector3> &pts, std::vector<IntDoublePair> &xSortedList, std::vector<IntDoublePair> &ySortedList,
 							std::vector<IntDoublePair> &zSortedList, std::vector<IntDoublePair> &scratch, int start, int end);
-	void neighborsRecurse(const std::vector<SlVector3> &pts, const SlVector3 &x, unsigned int num, double r, double r2,
+	void neighborsRecurse(const std::vector<SlVector3> &pts, const SlVector3 &x, unsigned int num, Real r, Real r2,
 												std::vector<int> &neighbors, int start, int end, int plane);
-	void neighborsRecurse(const std::vector<SlVector3> &pts, const SlVector3 &x, unsigned int num, 
+	void neighborsRecurse(const std::vector<SlVector3> &pts, const SlVector3 &x, unsigned int num,
 												std::vector<int> &neighbors, int start, int end, int plane);
-	void neighborsRecurse(const std::vector<SlVector3> &pts, const SlVector3 &x, double r, double r2,
+	void neighborsRecurse(const std::vector<SlVector3> &pts, const SlVector3 &x, Real r, Real r2,
 												std::vector<int> &neighbors, int start, int end, int plane);
-	void neighborRecurse(const std::vector<SlVector3> &pts, const SlVector3 &x, double r, double r2, 
-											 int &neighbor, double &ndist, int start, int end, int plane);
-	void neighborRecurse(const std::vector<SlVector3> &pts, const SlVector3 &x, 
-											 int &neighbor, double &ndist, int start, int end, int plane);
+	void neighborRecurse(const std::vector<SlVector3> &pts, const SlVector3 &x, Real r, Real r2,
+											 int &neighbor, Real &ndist, int start, int end, int plane);
+	void neighborRecurse(const std::vector<SlVector3> &pts, const SlVector3 &x,
+											 int &neighbor, Real &ndist, int start, int end, int plane);
 };
 
 #endif

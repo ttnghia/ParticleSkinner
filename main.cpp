@@ -30,6 +30,8 @@
 #include <fstream>
 #include <time.h>
 #include "marchingTet.H"
+#include "Common.h"
+
 #include <float.h>
 
 #include <tbb/tbb.h>
@@ -57,7 +59,7 @@ int gettimeofday(struct timeval* tp, struct timezone* tzp)
 
 #if 1
 // sph
-bool readfile(char* inPosFile, char* inVelFile, std::vector<SlVector3>& particles, std::vector<double>& radii, std::vector<SlVector3>& velocities)
+bool readfile(char* inPosFile, char* inVelFile, std::vector<SlVector3>& particles, std::vector<Real>& radii, std::vector<SlVector3>& velocities)
 {
     unsigned int  numPoints;
     unsigned int  numPointsInVelFile;
@@ -104,7 +106,7 @@ bool readfile(char* inPosFile, char* inVelFile, std::vector<SlVector3>& particle
 #else
 #if 0
 // sphere
-bool readfile(char* infname, std::vector<SlVector3>& particles, std::vector<double>& radii, std::vector<SlVector3>& velocities)
+bool readfile(char* infname, std::vector<SlVector3>& particles, std::vector<Real>& radii, std::vector<SlVector3>& velocities)
 {
     std::ifstream in(infname, std::ios::in | std::ios::binary);
     SlVector3     p;
@@ -119,7 +121,7 @@ bool readfile(char* infname, std::vector<SlVector3>& particles, std::vector<doub
 #else
 #if 1
 // jihun
-bool readfile(char* inPosFile, std::vector<SlVector3>& particles, std::vector<double>& radii, std::vector<SlVector3>& velocities)
+bool readfile(char* inPosFile, std::vector<SlVector3>& particles, std::vector<Real>& radii, std::vector<SlVector3>& velocities)
 {
     std::ifstream in(inPosFile, std::ios::in | std::ios::binary);
     int           numPoints;
@@ -137,11 +139,11 @@ bool readfile(char* inPosFile, std::vector<SlVector3>& particles, std::vector<do
 
 #else
 // fun
-bool readfile(char* inPosFile, std::vector<SlVector3>& particles, std::vector<double>& radii, std::vector<SlVector3>& velocities)
+bool readfile(char* inPosFile, std::vector<SlVector3>& particles, std::vector<Real>& radii, std::vector<SlVector3>& velocities)
 {
     std::ifstream in(inPosFile, std::ios::in | std::ios::binary);
     SlVector3     p;
-    double        junk;
+    Real          junk;
     while(!in.eof())
     {
         in >> p[0] >> p[1] >> p[2] >> junk;
@@ -185,9 +187,9 @@ int main(int argc, char** argv)
     static int   verboseFlag = 0;
     bool         helpFlag = false;
     int          iterLaplace = 15, iterBiharmonic = 500, redistanceFrequency = 50;
-    double       rmin = -DBL_MAX, rmax = -DBL_MAX, rinit = -DBL_MAX, velGain = 1.0,
-                 dtLaplace = -DBL_MAX, dtBiharmonic = -DBL_MAX, dtBiharmonicGain = 1.0;
-    double maxStretch = 4, rratio = 4;
+    Real         rmin = -REAL_MAX, rmax = -REAL_MAX, rinit = -REAL_MAX, velGain = 1.0,
+                 dtLaplace = -REAL_MAX, dtBiharmonic = -REAL_MAX, dtBiharmonicGain = 1.0;
+    Real maxStretch = 4, rratio = 4;
 
 
 
@@ -326,12 +328,12 @@ int main(int argc, char** argv)
         exit(1);
     }
 
-    double h         = atof(argv[optind++]);
-    char*  inPosFile = argv[optind++];
-    char*  inVelFile = argv[optind++];
-    char*  outfname  = argv[optind++];
+    Real  h         = atof(argv[optind++]);
+    char* inPosFile = argv[optind++];
+    char* inVelFile = argv[optind++];
+    char* outfname  = argv[optind++];
 
-    if(rmin == -DBL_MAX)
+    if(rmin == -REAL_MAX)
     {
         rmin = 0.86603 * h;         // 0.5*sqrt(3)*h
         // there could be a stretch up to this amount, we want to make sure that particles
@@ -345,18 +347,18 @@ int main(int argc, char** argv)
             rmin *= cbrt(maxStretch);
         }
     }
-    if(rmax == -DBL_MAX) rmax = rratio * rmin;
-    if(rinit == -DBL_MAX) rinit = 0.5 * (rmin + rmax);
+    if(rmax == -REAL_MAX) rmax = rratio * rmin;
+    if(rinit == -REAL_MAX) rinit = 0.5 * (rmin + rmax);
     else if(!(flags & SmoothingGrid::VARIABLE_RADIUS))
         rinit *= rmin;
-    if(dtLaplace == -DBL_MAX) dtLaplace = 0.1 * h * h;
-    if(dtBiharmonic == -DBL_MAX) dtBiharmonic = 0.01 * dtBiharmonicGain * h * h * h * h;
+    if(dtLaplace == -REAL_MAX) dtLaplace = 0.1 * h * h;
+    if(dtBiharmonic == -REAL_MAX) dtBiharmonic = 0.01 * dtBiharmonicGain * h * h * h * h;
 
     timeval startTime, endTime, beginTime;
     gettimeofday(&beginTime, NULL);
 
     std::vector<SlVector3> particles, velocities;
-    std::vector<double>    radii;
+    std::vector<Real>      radii;
     gettimeofday(&startTime, NULL);
     readfile(inPosFile, inVelFile, particles, radii, velocities);
     gettimeofday(&endTime, NULL);

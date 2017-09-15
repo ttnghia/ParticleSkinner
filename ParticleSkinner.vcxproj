@@ -94,6 +94,7 @@
     <ClCompile Include="smoothingGrid.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Common.h" />
     <ClInclude Include="kdTree.H" />
     <ClInclude Include="marchingTet.H" />
     <ClInclude Include="ParallelFuncs.h" />

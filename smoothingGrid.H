@@ -27,6 +27,8 @@
 #include "kdTree.H"
 #include "slVector.H"
 #include "slArray.H"
+#include "Common.h"
+
 #include <vector>
 
 #include "ParallelObjects.h"
@@ -39,37 +41,37 @@ class SmoothingGrid {
 	static const unsigned int VELOCITY_ANISOTROPY = 8;
 	static const unsigned int VERBOSE = 16;
 
-	double h;
+	Real h;
 	int nx, ny, nz;
 	SlVector3 bbMin, bbMax;
-	SlArray3D<double> phi;
+	SlArray3D<Real> phi;
 
 	~SmoothingGrid();
-	SmoothingGrid(double h, double r_min, double r_max, double r_init, double aniGain, double maxStretch, unsigned int flags,
-								const std::vector<SlVector3> &particles, const std::vector<double> &radii, const std::vector<SlVector3> &velocities);
-	bool doMeanCurvatureSmoothing(int iter, double dt,int redistanceFrequency);
-	bool doLaplacianSmoothing(int iter, double dt, int redistanceFrequency);
-	bool doBiharmonicSmoothing(int iter, double dt, int redistanceFrequency);
+	SmoothingGrid(Real h, Real r_min, Real r_max, Real r_init, Real aniGain, Real maxStretch, unsigned int flags,
+								const std::vector<SlVector3> &particles, const std::vector<Real> &radii, const std::vector<SlVector3> &velocities);
+	bool doMeanCurvatureSmoothing(int iter, Real dt,int redistanceFrequency);
+	bool doLaplacianSmoothing(int iter, Real dt, int redistanceFrequency);
+	bool doBiharmonicSmoothing(int iter, Real dt, int redistanceFrequency);
 
 private:
-	double rmin, rmax, rinit;
+	Real rmin, rmax, rinit;
 	unsigned int flags;
 	KDTree *kdtree;
-	SlArray3D<double> biharmonic, laplacian, meanCurvature, phi_min, phi_max, tempPhi;
+	SlArray3D<Real> biharmonic, laplacian, meanCurvature, phi_min, phi_max, tempPhi;
 	SlArray3D<ParallelObjects::SpinLock> phi_lock;
 
 	SlArray3D<char> accepted;
 
-	bool computeG(const std::vector<SlVector3> &particles, double rmax, std::vector<SlMatrix3x3> &G, std::vector<double> &factors, double maxStretch);
-	bool computeG(const std::vector<SlVector3> &particles, const std::vector<SlVector3> &velocities, double gain, std::vector<SlMatrix3x3> &G, std::vector<double> &factors, double maxStretch);
+	bool computeG(const std::vector<SlVector3> &particles, Real rmax, std::vector<SlMatrix3x3> &G, std::vector<Real> &factors, Real maxStretch);
+	bool computeG(const std::vector<SlVector3> &particles, const std::vector<SlVector3> &velocities, Real gain, std::vector<SlMatrix3x3> &G, std::vector<Real> &factors, Real maxStretch);
 	bool rasterize(const std::vector<SlVector3> &particles);
-	bool rasterize(const std::vector<SlVector3> &particles, const std::vector<double> &radii);
-	bool rasterize(const std::vector<SlVector3> &particles, const std::vector<SlMatrix3x3> &Gs, const std::vector<double> &factors);
+	bool rasterize(const std::vector<SlVector3> &particles, const std::vector<Real> &radii);
+	bool rasterize(const std::vector<SlVector3> &particles, const std::vector<SlMatrix3x3> &Gs, const std::vector<Real> &factors);
 	bool computeLaplacian();
 	bool computeBiharmonic();
 	bool computeMeanCurvature();
-	bool stepMeanCurvature(double dt);
-	bool stepLaplacian(double dt);
-	double stepBiharmonic(double dt);
+	bool stepMeanCurvature(Real dt);
+	bool stepLaplacian(Real dt);
+	Real stepBiharmonic(Real dt);
 
 };

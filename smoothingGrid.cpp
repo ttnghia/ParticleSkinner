@@ -196,61 +196,66 @@ bool SmoothingGrid::rasterize(const std::vector<SlVector3>& particles)
     int width = (int)ceil(rmax / h) + 1;
     phi = REAL_MAX;
 
-    for(unsigned int p = 0; p < particles.size(); p++)
-    {
-        SlVector3 pos(particles[p]);
-        SlInt3    bin;
-        bin[0] = (int)((pos[0] - bbMin[0]) / h);
-        bin[1] = (int)((pos[1] - bbMin[1]) / h);
-        bin[2] = (int)((pos[2] - bbMin[2]) / h);
+    ParallelFuncs::parallel_for<size_t>(0, particles.size(),
+                                        [&](size_t p)
+                                        {
+                                            SlVector3 pos(particles[p]);
+                                            SlInt3 bin;
+                                            bin[0] = (int)((pos[0] - bbMin[0]) / h);
+                                            bin[1] = (int)((pos[1] - bbMin[1]) / h);
+                                            bin[2] = (int)((pos[2] - bbMin[2]) / h);
 
-        unsigned int imax = fmin(bin[0] + width + 2, nx);
-        unsigned int jmax = fmin(bin[1] + width + 2, ny);
-        unsigned int kmax = fmin(bin[2] + width + 2, nz);
+                                            unsigned int imax = fmin(bin[0] + width + 2, nx);
+                                            unsigned int jmax = fmin(bin[1] + width + 2, ny);
+                                            unsigned int kmax = fmin(bin[2] + width + 2, nz);
 
-        for(unsigned int i = fmax(bin[0] - width, 0); i < imax; i++)
-        {
-            for(unsigned int j = fmax(bin[1] - width, 0); j < jmax; j++)
-            {
-                // for the inner most loop, the i and j coordinates do not change
-                // as we are looking for sqrmag of the distance, we can precomupte
-                // the first two terms and only worry about the last term during the loop
-                // this reduces the computation to 4 adds, one multiply, and a min in each
-                // iteration of the inner most loop.
-                unsigned int k    = fmax(bin[2] - width, 0);
-                Real         d    = k * h + bbMin[2] - pos[2];
-                Real         psum = sqr(i * h + bbMin[0] - pos[0]) + sqr(j * h + bbMin[1] - pos[1]);
-                Real*        dptr = &(phi(i, j, k));
+                                            for(unsigned int i = fmax(bin[0] - width, 0); i < imax; i++)
+                                            {
+                                                for(unsigned int j = fmax(bin[1] - width, 0); j < jmax; j++)
+                                                {
+                                                    // for the inner most loop, the i and j coordinates do not change
+                                                    // as we are looking for sqrmag of the distance, we can precomupte
+                                                    // the first two terms and only worry about the last term during the loop
+                                                    // this reduces the computation to 4 adds, one multiply, and a min in each
+                                                    // iteration of the inner most loop.
+                                                    unsigned int k = fmax(bin[2] - width, 0);
+                                                    Real d = k * h + bbMin[2] - pos[2];
+                                                    Real psum = sqr(i * h + bbMin[0] - pos[0]) + sqr(j * h + bbMin[1] - pos[1]);
+                                                    Real* dptr = &(phi(i, j, k));
 
-                for(; k < kmax; k++, d += h, dptr++)
-                {
-                    (*dptr) = fmin((*dptr), psum + sqr(d));
-                }
-            }
-        }
-    }
+                                                    for(; k < kmax; k++, d += h, dptr++)
+                                                    {
+                                                        phi_lock(i, j, k).lock();
+                                                        (*dptr) = fmin((*dptr), psum + sqr(d));
+                                                        phi_lock(i, j, k).unlock();
+                                                    }
+                                                }
+                                            }
+                                        });
 
-    for(int i = 0; i < nx; i++)
-    {
-        for(int j = 0; j < ny; j++)
-        {
-            for(int k = 0; k < nz; k++)
-            {
-                if(phi(i, j, k) == REAL_MAX)
-                {
-                    phi_min(i, j, k) = REAL_MAX;
-                    phi_max(i, j, k) = REAL_MAX;
-                }
-                else
-                {
-                    Real dist = sqrt(phi(i, j, k));
-                    phi(i, j, k)     = dist - rinit;
-                    phi_min(i, j, k) = dist - rmin;
-                    phi_max(i, j, k) = dist - rmax;
-                }
-            }
-        }
-    }
+    //for(int i = 0; i < nx; i++)
+    //{
+    //    for(int j = 0; j < ny; j++)
+    //    {
+    //        for(int k = 0; k < nz; k++)
+    ParallelFuncs::parallel_for<int>(0, nx,
+                                     0, ny,
+                                     0, nz,
+                                     [&](int i, int j, int k)
+                                     {
+                                         if(phi(i, j, k) == REAL_MAX)
+                                         {
+                                             phi_min(i, j, k) = REAL_MAX;
+                                             phi_max(i, j, k) = REAL_MAX;
+                                         }
+                                         else
+                                         {
+                                             Real dist = sqrt(phi(i, j, k));
+                                             phi(i, j, k) = dist - rinit;
+                                             phi_min(i, j, k) = dist - rmin;
+                                             phi_max(i, j, k) = dist - rmax;
+                                         }
+                                     });
     return true;
 }
 
@@ -261,54 +266,58 @@ bool SmoothingGrid::rasterize(const std::vector<SlVector3>& particles,
     phi_min = REAL_MAX;
     phi_max = REAL_MAX;
 
-    for(unsigned int p = 0; p < particles.size(); p++)
-    {
-        SlVector3 pos(particles[p]);
-        Real      r     = radii[p];
-        Real      pinit = r * rinit;
-        Real      pmax  = r * rmax;
-        Real      pmin  = r * rmin;
-        int       width = (int)ceil(rmax / h) + 1;
+    //for(unsigned int p = 0; p < particles.size(); p++)
+    ParallelFuncs::parallel_for<size_t>(0, particles.size(),
+                                        [&](size_t p)
+                                        {
+                                            SlVector3 pos(particles[p]);
+                                            Real r = radii[p];
+                                            Real pinit = r * rinit;
+                                            Real pmax = r * rmax;
+                                            Real pmin = r * rmin;
+                                            int width = (int)ceil(rmax / h) + 1;
 
-        SlInt3 bin;
-        bin[0] = (int)((pos[0] - bbMin[0]) / h);
-        bin[1] = (int)((pos[1] - bbMin[1]) / h);
-        bin[2] = (int)((pos[2] - bbMin[2]) / h);
+                                            SlInt3 bin;
+                                            bin[0] = (int)((pos[0] - bbMin[0]) / h);
+                                            bin[1] = (int)((pos[1] - bbMin[1]) / h);
+                                            bin[2] = (int)((pos[2] - bbMin[2]) / h);
 
-        unsigned int imax = fmin(bin[0] + width + 2, nx);
-        unsigned int jmax = fmin(bin[1] + width + 2, ny);
-        unsigned int kmax = fmin(bin[2] + width + 2, nz);
+                                            unsigned int imax = fmin(bin[0] + width + 2, nx);
+                                            unsigned int jmax = fmin(bin[1] + width + 2, ny);
+                                            unsigned int kmax = fmin(bin[2] + width + 2, nz);
 
-        for(unsigned int i = fmax(bin[0] - width, 0); i < imax; i++)
-        {
-            for(unsigned int j = fmax(bin[1] - width, 0); j < jmax; j++)
-            {
-                // for the inner most loop, the i and j coordinates do not change
-                // as we are looking for sqrmag of the distance, we can precomupte
-                // the first two terms and only worry about the last term during the loop
-                // this reduces the computation to 4 adds, one multiply, and a min in each
-                // iteration of the inner most loop.
-                unsigned int k     = fmax(bin[2] - width, 0);
-                Real         d     = k * h + bbMin[2] - pos[2];
-                Real         psum  = sqr(i * h + bbMin[0] - pos[0]) + sqr(j * h + bbMin[1] - pos[1]);
-                Real*        pptr  = &(phi(i, j, k));
-                Real*        mxptr = &(phi_max(i, j, k));
-                Real*        mnptr = &(phi_min(i, j, k));
+                                            for(unsigned int i = fmax(bin[0] - width, 0); i < imax; i++)
+                                            {
+                                                for(unsigned int j = fmax(bin[1] - width, 0); j < jmax; j++)
+                                                {
+                                                    // for the inner most loop, the i and j coordinates do not change
+                                                    // as we are looking for sqrmag of the distance, we can precomupte
+                                                    // the first two terms and only worry about the last term during the loop
+                                                    // this reduces the computation to 4 adds, one multiply, and a min in each
+                                                    // iteration of the inner most loop.
+                                                    unsigned int k = fmax(bin[2] - width, 0);
+                                                    Real d = k * h + bbMin[2] - pos[2];
+                                                    Real psum = sqr(i * h + bbMin[0] - pos[0]) + sqr(j * h + bbMin[1] - pos[1]);
+                                                    Real* pptr = &(phi(i, j, k));
+                                                    Real* mxptr = &(phi_max(i, j, k));
+                                                    Real* mnptr = &(phi_min(i, j, k));
 
-                for(; k < kmax; k++, d += h, pptr++, mxptr++, mnptr++)
-                {
-                    Real dist = sqrt(psum + sqr(d));
-                    Real val  = dist - pinit;
-                    if(val < (*pptr))
-                    {
-                        (*pptr)  = val;
-                        (*mxptr) = dist - pmax;
-                        (*mnptr) = dist - pmin;
-                    }
-                }
-            }
-        }
-    }
+                                                    for(; k < kmax; k++, d += h, pptr++, mxptr++, mnptr++)
+                                                    {
+                                                        Real dist = sqrt(psum + sqr(d));
+                                                        Real val = dist - pinit;
+                                                        phi_lock(i, j, k).lock();
+                                                        if(val < (*pptr))
+                                                        {
+                                                            (*pptr) = val;
+                                                            (*mxptr) = dist - pmax;
+                                                            (*mnptr) = dist - pmin;
+                                                        }
+                                                        phi_lock(i, j, k).unlock();
+                                                    }
+                                                }
+                                            }
+                                        });
 
     return true;
 }
@@ -319,70 +328,76 @@ bool SmoothingGrid::rasterize(const std::vector<SlVector3>&   particles,
 {
     phi = REAL_MAX;
 
-    for(unsigned int p = 0; p < particles.size(); p++)
-    {
-        SlVector3          pos(particles[p]);
-        const SlMatrix3x3& G = Gs[p];
+    //for(unsigned int p = 0; p < particles.size(); p++)
+    ParallelFuncs::parallel_for<size_t>(0, particles.size(),
+                                        [&](size_t p)
+                                        {
+                                            SlVector3 pos(particles[p]);
+                                            const SlMatrix3x3& G = Gs[p];
 
-        SlVector3 Gc0(G(0, 0), G(1, 0), G(2, 0));
-        SlVector3 Gc1(G(0, 1), G(1, 1), G(2, 1));
-        SlVector3 Gc2(G(0, 2), G(1, 2), G(2, 2));
+                                            SlVector3 Gc0(G(0, 0), G(1, 0), G(2, 0));
+                                            SlVector3 Gc1(G(0, 1), G(1, 1), G(2, 1));
+                                            SlVector3 Gc2(G(0, 2), G(1, 2), G(2, 2));
 
-        int width = (int)ceil(factors[p] * rmax / h) + 1 + 3;
+                                            int width = (int)ceil(factors[p] * rmax / h) + 1 + 3;
 
-        SlInt3 bin;
-        bin[0] = (int)((pos[0] - bbMin[0]) / h);
-        bin[1] = (int)((pos[1] - bbMin[1]) / h);
-        bin[2] = (int)((pos[2] - bbMin[2]) / h);
+                                            SlInt3 bin;
+                                            bin[0] = (int)((pos[0] - bbMin[0]) / h);
+                                            bin[1] = (int)((pos[1] - bbMin[1]) / h);
+                                            bin[2] = (int)((pos[2] - bbMin[2]) / h);
 
-        unsigned int imax = fmin(bin[0] + width + 2, nx);
-        unsigned int jmax = fmin(bin[1] + width + 2, ny);
-        unsigned int kmax = fmin(bin[2] + width + 2, nz);
+                                            unsigned int imax = fmin(bin[0] + width + 2, nx);
+                                            unsigned int jmax = fmin(bin[1] + width + 2, ny);
+                                            unsigned int kmax = fmin(bin[2] + width + 2, nz);
 
-        for(unsigned int i = fmax(bin[0] - width, 0); i < imax; i++)
-        {
-            for(unsigned int j = fmax(bin[1] - width, 0); j < jmax; j++)
-            {
-                // for the inner most loop, the i and j coordinates do not change
-                // as we are looking for sqrmag of the distance, we can precomupte
-                // the first two terms and only worry about the last term during the loop
-                // Here the terms are columns from the G matrix, we add a h* the third col
-                // every time we increas k
-                unsigned int k    = fmax(bin[2] - width, 0);
-                SlVector3    psum = (i * h + bbMin[0] - pos[0]) * Gc0 + (j * h + bbMin[1] - pos[1]) * Gc1 + (k * h + bbMin[2] - pos[2]) * Gc2;
-                SlVector3    hGc2 = h * Gc2;
-                Real*        dptr = &(phi(i, j, k));
+                                            for(unsigned int i = fmax(bin[0] - width, 0); i < imax; i++)
+                                            {
+                                                for(unsigned int j = fmax(bin[1] - width, 0); j < jmax; j++)
+                                                {
+                                                    // for the inner most loop, the i and j coordinates do not change
+                                                    // as we are looking for sqrmag of the distance, we can precomupte
+                                                    // the first two terms and only worry about the last term during the loop
+                                                    // Here the terms are columns from the G matrix, we add a h* the third col
+                                                    // every time we increas k
+                                                    unsigned int k = fmax(bin[2] - width, 0);
+                                                    SlVector3 psum = (i * h + bbMin[0] - pos[0]) * Gc0 + (j * h + bbMin[1] - pos[1]) * Gc1 + (k * h + bbMin[2] - pos[2]) * Gc2;
+                                                    SlVector3 hGc2 = h * Gc2;
+                                                    Real* dptr = &(phi(i, j, k));
 
-                for(; k < kmax; k++, psum += hGc2, dptr++)
-                {
-                    (*dptr) = fmin((*dptr), sqrMag(psum));
-                }
-            }
-        }
-    }
+                                                    for(; k < kmax; k++, psum += hGc2, dptr++)
+                                                    {
+                                                        phi_lock(i, j, k).lock();
+                                                        (*dptr) = fmin((*dptr), sqrMag(psum));
+                                                        phi_lock(i, j, k).unlock();
+                                                    }
+                                                }
+                                            }
+                                        });
 
 
-    for(int i = 0; i < nx; i++)
-    {
-        for(int j = 0; j < ny; j++)
-        {
-            for(int k = 0; k < nz; k++)
-            {
-                if(phi(i, j, k) == REAL_MAX)
-                {
-                    phi_min(i, j, k) = REAL_MAX;
-                    phi_max(i, j, k) = REAL_MAX;
-                }
-                else
-                {
-                    Real dist = sqrt(phi(i, j, k));
-                    phi(i, j, k)     = dist - rinit;
-                    phi_min(i, j, k) = dist - rmin;
-                    phi_max(i, j, k) = dist - rmax;
-                }
-            }
-        }
-    }
+    //for(int i = 0; i < nx; i++)
+    //{
+    //    for(int j = 0; j < ny; j++)
+    //    {
+    //        for(int k = 0; k < nz; k++)
+    ParallelFuncs::parallel_for<int>(0, nx,
+                                     0, ny,
+                                     0, nz,
+                                     [&](int i, int j, int k)
+                                     {
+                                         if(phi(i, j, k) == REAL_MAX)
+                                         {
+                                             phi_min(i, j, k) = REAL_MAX;
+                                             phi_max(i, j, k) = REAL_MAX;
+                                         }
+                                         else
+                                         {
+                                             Real dist = sqrt(phi(i, j, k));
+                                             phi(i, j, k) = dist - rinit;
+                                             phi_min(i, j, k) = dist - rmin;
+                                             phi_max(i, j, k) = dist - rmax;
+                                         }
+                                     });
     return true;
 }
 
@@ -459,6 +474,9 @@ SmoothingGrid::SmoothingGrid(Real h, Real rmin, Real rmax, Real rinit, Real gain
     accepted.allocate(nx, ny, nz);
     phi_max.allocate(nx, ny, nz);
     phi_min.allocate(nx, ny, nz);
+
+
+    phi_lock.allocate(nx, ny, nz);
 
     if(flags & VARIABLE_RADIUS)
     {

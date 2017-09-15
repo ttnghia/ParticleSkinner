@@ -605,61 +605,68 @@ bool SmoothingGrid::doBiharmonicSmoothing(int iter, Real dt, int redistanceFrequ
 bool SmoothingGrid::computeMeanCurvature()
 {
     Real d1 = 12 * sqr(h), d2 = 48 * sqr(h), updateBand = 3 * h;
-    for(int i = 2; i < nx - 2; i++)
-    {
-        for(int j = 2; j < ny - 2; j++)
-        {
-            for(int k = 2; k < nz - 2; k++)
-            {
-                if(fabs(phi(i, j, k)) <= updateBand)
-                {
-                    Real phix = cdX(i, j, k, phi, nx, h), phiy = cdY(i, j, k, phi, ny, h), phiz = cdZ(i, j, k, phi, nz, h);
-                    Real gradMag = sqrt(sqr(phix) + sqr(phiy) + sqr(phiz));
-                    Real phixx, phiyy, phixy, phizz, phixz, phiyz;
-                    int  ip1 = i + 1, im1 = i - 1, im2 = i - 2, ip2 = i + 2, jp1 = j + 1, jm1 = j - 1, jm2 = j - 2, jp2 = j + 2,
-                         kp1 = k + 1, km1 = k - 1, km2 = k - 2, kp2 = k + 2;
 
-                    phixx = (-phi(ip2, j, k) + 16 * phi(ip1, j, k) - 30 * phi(i, j, k) + 16 * phi(im1, j, k) - phi(im2, j, k)) / d1;
-                    phiyy = (-phi(i, jp2, k) + 16 * phi(i, jp1, k) - 30 * phi(i, j, k) + 16 * phi(i, jm1, k) - phi(i, jm2, k)) / d1;
-                    phizz = (-phi(i, j, kp2) + 16 * phi(i, j, kp1) - 30 * phi(i, j, k) + 16 * phi(i, j, km1) - phi(i, j, km2)) / d1;
-                    phixy = (-phi(ip2, jp2, k) + 16 * phi(ip1, jp1, k) + phi(im2, jp2, k) - 16 * phi(im1, jp1, k) + phi(ip2, jm2, k)
-                             - 16 * phi(ip1, jm1, k) - phi(im2, jm2, k) + 16 * phi(im1, jm1, k)) / d2;
-                    phiyz = (-phi(i, jp2, kp2) + 16 * phi(i, jp1, kp1) + phi(i, jm2, kp2) - 16 * phi(i, jm1, kp1) + phi(i, jp2, km2)
-                             - 16 * phi(i, jp1, km1) - phi(i, jm2, km2) + 16 * phi(i, jm1, km1)) / d2;
-                    phixz = (-phi(ip2, j, kp2) + 16 * phi(ip1, j, kp1) + phi(im2, j, kp2) - 16 * phi(im1, j, kp1) + phi(ip2, j, km2)
-                             - 16 * phi(ip1, j, km1) - phi(im2, j, km2) + 16 * phi(im1, j, km1)) / d2;
 
-                    meanCurvature(i, j, k) = (sqr(phix) * phiyy - 2 * phix * phiy * phixy + sqr(phiy) * phixx + sqr(phix) * phizz
-                                              - 2 * phix * phiz * phixz + sqr(phiz) * phixx + sqr(phiy) * phizz
-                                              - 2 * phiy * phiz * phiyz + sqr(phiz) * phiyy) / (sqr(gradMag));
-                }
-            }
-        }
-    }
+    //for(int i = 2; i < nx - 2; i++)
+    //{
+    //    for(int j = 2; j < ny - 2; j++)
+    //    {
+    //        for(int k = 2; k < nz - 2; k++)
+    ParallelFuncs::parallel_for<int>(2, nx - 2,
+                                     2, ny - 2,
+                                     2, nz - 2,
+                                     [&](int i, int j, int k)
+                                     {
+                                         if(fabs(phi(i, j, k)) <= updateBand)
+                                         {
+                                             Real phix = cdX(i, j, k, phi, nx, h), phiy = cdY(i, j, k, phi, ny, h), phiz = cdZ(i, j, k, phi, nz, h);
+                                             Real gradMag = sqrt(sqr(phix) + sqr(phiy) + sqr(phiz));
+                                             Real phixx, phiyy, phixy, phizz, phixz, phiyz;
+                                             int ip1 = i + 1, im1 = i - 1, im2 = i - 2, ip2 = i + 2, jp1 = j + 1, jm1 = j - 1, jm2 = j - 2, jp2 = j + 2,
+                                             kp1 = k + 1, km1 = k - 1, km2 = k - 2, kp2 = k + 2;
+
+                                             phixx = (-phi(ip2, j, k) + 16 * phi(ip1, j, k) - 30 * phi(i, j, k) + 16 * phi(im1, j, k) - phi(im2, j, k)) / d1;
+                                             phiyy = (-phi(i, jp2, k) + 16 * phi(i, jp1, k) - 30 * phi(i, j, k) + 16 * phi(i, jm1, k) - phi(i, jm2, k)) / d1;
+                                             phizz = (-phi(i, j, kp2) + 16 * phi(i, j, kp1) - 30 * phi(i, j, k) + 16 * phi(i, j, km1) - phi(i, j, km2)) / d1;
+                                             phixy = (-phi(ip2, jp2, k) + 16 * phi(ip1, jp1, k) + phi(im2, jp2, k) - 16 * phi(im1, jp1, k) + phi(ip2, jm2, k)
+                                                      - 16 * phi(ip1, jm1, k) - phi(im2, jm2, k) + 16 * phi(im1, jm1, k)) / d2;
+                                             phiyz = (-phi(i, jp2, kp2) + 16 * phi(i, jp1, kp1) + phi(i, jm2, kp2) - 16 * phi(i, jm1, kp1) + phi(i, jp2, km2)
+                                                      - 16 * phi(i, jp1, km1) - phi(i, jm2, km2) + 16 * phi(i, jm1, km1)) / d2;
+                                             phixz = (-phi(ip2, j, kp2) + 16 * phi(ip1, j, kp1) + phi(im2, j, kp2) - 16 * phi(im1, j, kp1) + phi(ip2, j, km2)
+                                                      - 16 * phi(ip1, j, km1) - phi(im2, j, km2) + 16 * phi(im1, j, km1)) / d2;
+
+                                             meanCurvature(i, j, k) = (sqr(phix) * phiyy - 2 * phix * phiy * phixy + sqr(phiy) * phixx + sqr(phix) * phizz
+                                                                       - 2 * phix * phiz * phixz + sqr(phiz) * phixx + sqr(phiy) * phizz
+                                                                       - 2 * phiy * phiz * phiyz + sqr(phiz) * phiyy) / (sqr(gradMag));
+                                         }
+                                     });
     return true;
 }
 
 bool SmoothingGrid::stepMeanCurvature(Real dt)
 {
     Real change = 0.0, updateBand = 3 * h;
-    for(int i = 2; i < nx - 2; i++)
-    {
-        for(int j = 2; j < ny - 2; j++)
-        {
-            for(int k = 2; k < nz - 2; k++)
-            {
-                if(fabs(phi(i, j, k)) <= updateBand)
-                {
-                    Real val        = meanCurvature(i, j, k);
-                    Real updatedPhi = phi(i, j, k) + val * dt;
-                    updatedPhi   = fmin(updatedPhi, phi_min(i, j, k));
-                    updatedPhi   = fmax(updatedPhi, phi_max(i, j, k));
-                    phi(i, j, k) = updatedPhi;
-                    change      += fabs(val);
-                }
-            }
-        }
-    }
+
+    /*   for(int i = 2; i < nx - 2; i++)
+       {
+           for(int j = 2; j < ny - 2; j++)
+           {
+               for(int k = 2; k < nz - 2; k++)*/
+    ParallelFuncs::parallel_for<int>(2, nx - 2,
+                                     2, ny - 2,
+                                     2, nz - 2,
+                                     [&](int i, int j, int k)
+                                     {
+                                         if(fabs(phi(i, j, k)) <= updateBand)
+                                         {
+                                             Real val = meanCurvature(i, j, k);
+                                             Real updatedPhi = phi(i, j, k) + val * dt;
+                                             updatedPhi = fmin(updatedPhi, phi_min(i, j, k));
+                                             updatedPhi = fmax(updatedPhi, phi_max(i, j, k));
+                                             phi(i, j, k) = updatedPhi;
+                                             change += fabs(val);
+                                         }
+                                     });
     if(flags & VERBOSE) std::cout << "Change in this iteration " << change << std::endl;
     return true;
 }
@@ -667,27 +674,34 @@ bool SmoothingGrid::stepMeanCurvature(Real dt)
 bool SmoothingGrid::stepLaplacian(Real dt)
 {
     Real change = 0.0, updateBand = 4 * h;
-    for(int i = 2; i < nx - 2; i++)
-    {
+
+    /*for(int i = 2; i < nx - 2; i++)
+       {
         for(int j = 2; j < ny - 2; j++)
         {
-            for(int k = 2; k < nz - 2; k++)
-            {
-                if(fabs(phi(i, j, k)) <= updateBand)
-                {
-                    Real phix = cdX(i, j, k, phi, nx, h), phiy = cdY(i, j, k, phi, ny, h), phiz = cdZ(i, j, k, phi, nz, h);
-                    Real val        = laplacian(i, j, k);
-                    Real gradMag    = sqrt(sqr(phix) + sqr(phiy) + sqr(phiz));
-                    Real updatedPhi = phi(i, j, k) + val * dt * gradMag;
-                    updatedPhi   = fmin(updatedPhi, phi_min(i, j, k));
-                    updatedPhi   = fmax(updatedPhi, phi_max(i, j, k));
-                    phi(i, j, k) = updatedPhi;
-                    change      += fabs(val);
-                }
-            }
-        }
-    }
-    if(flags & VERBOSE) std::cout << "Change in this iteration " << change << std::endl;
+            for(int k = 2; k < nz - 2; k++)*/
+    ParallelFuncs::parallel_for<int>(2, nx - 2,
+                                     2, ny - 2,
+                                     2, nz - 2,
+                                     [&](int i, int j, int k)
+                                     {
+                                         if(fabs(phi(i, j, k)) <= updateBand)
+                                         {
+                                             Real phix = cdX(i, j, k, phi, nx, h), phiy = cdY(i, j, k, phi, ny, h), phiz = cdZ(i, j, k, phi, nz, h);
+                                             Real val = laplacian(i, j, k);
+                                             Real gradMag = sqrt(sqr(phix) + sqr(phiy) + sqr(phiz));
+                                             Real updatedPhi = phi(i, j, k) + val * dt * gradMag;
+                                             updatedPhi = fmin(updatedPhi, phi_min(i, j, k));
+                                             updatedPhi = fmax(updatedPhi, phi_max(i, j, k));
+                                             phi(i, j, k) = updatedPhi;
+                                             //change      += fabs(val);
+                                         }
+                                     });
+    //if(flags & VERBOSE) std::cout << "Change in this iteration " << change << std::endl;
+
+    static int iter = 0;
+    ++iter;
+    if(flags & VERBOSE) std::cout << "Iter: " << iter << std::endl;
     return true;
 }
 

@@ -1,6 +1,6 @@
 // Copyright (c) 2011, Regents of the University of Utah
 // All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
 //     * Redistributions of source code must retain the above copyright
@@ -29,6 +29,8 @@
 #include "slArray.H"
 #include <vector>
 
+#include "ParallelObjects.h"
+
 class SmoothingGrid {
  public:
 	static const unsigned int nneighbors = 32;
@@ -43,7 +45,7 @@ class SmoothingGrid {
 	SlArray3D<double> phi;
 
 	~SmoothingGrid();
-	SmoothingGrid(double h, double r_min, double r_max, double r_init, double aniGain, double maxStretch, unsigned int flags, 
+	SmoothingGrid(double h, double r_min, double r_max, double r_init, double aniGain, double maxStretch, unsigned int flags,
 								const std::vector<SlVector3> &particles, const std::vector<double> &radii, const std::vector<SlVector3> &velocities);
 	bool doMeanCurvatureSmoothing(int iter, double dt,int redistanceFrequency);
 	bool doLaplacianSmoothing(int iter, double dt, int redistanceFrequency);
@@ -54,6 +56,8 @@ private:
 	unsigned int flags;
 	KDTree *kdtree;
 	SlArray3D<double> biharmonic, laplacian, meanCurvature, phi_min, phi_max, tempPhi;
+	SlArray3D<ParallelObjects::SpinLock> phi_lock;
+
 	SlArray3D<char> accepted;
 
 	bool computeG(const std::vector<SlVector3> &particles, double rmax, std::vector<SlMatrix3x3> &G, std::vector<double> &factors, double maxStretch);

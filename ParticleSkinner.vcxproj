@@ -96,6 +96,9 @@
   <ItemGroup>
     <ClInclude Include="kdTree.H" />
     <ClInclude Include="marchingTet.H" />
+    <ClInclude Include="ParallelFuncs.h" />
+    <ClInclude Include="ParallelObjects.h" />
+    <ClInclude Include="ParallelSTL.h" />
     <ClInclude Include="slArray.H" />
     <ClInclude Include="slIO.H" />
     <ClInclude Include="slMatrix.H" />

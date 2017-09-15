@@ -62,6 +62,15 @@
     <ClInclude Include="smoothingGrid.H">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ParallelFuncs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ParallelObjects.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ParallelSTL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Makefile" />

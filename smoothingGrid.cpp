@@ -32,6 +32,9 @@
 #include <iostream>
 #include <cmath>
 
+#include "ParallelFuncs.h"
+#include "ParallelSTL.h"
+
 inline double sqr(double x) { return (x * x); };
 
 inline double cdX(int i, int j, int k, SlArray3D<double>& phi, int nx, double h)
@@ -116,73 +119,76 @@ bool SmoothingGrid::computeG(const std::vector<SlVector3>& particles, double rma
     std::vector<int> neighbors;
     neighbors.reserve(nneighbors);
 
-    for(unsigned int i = 0; i < particles.size(); i++)
-    {
-        SlVector3        xiw(0.0);
-        double           weightsum = 0.0;
-        const SlVector3& pos       = particles[i];
+    //for(unsigned int i = 0; i < particles.size(); i++)
+    ParallelFuncs::parallel_for<size_t>(0, particles.size(),
+                                        [&](size_t i)
+                                        {
+                                            SlVector3 xiw(0.0);
+                                            double weightsum = 0.0;
+                                            const SlVector3& pos = particles[i];
 
-        kdtree->neighbors(particles, pos, nneighbors, r, neighbors);
+                                            kdtree->neighbors(particles, pos, nneighbors, r, neighbors);
 
-        for(unsigned int j = 0; j < neighbors.size(); j++)
-        {
-            int&             k     = neighbors[j];
-            const SlVector3& npos  = particles[k];
-            double           d     = mag(pos - npos);
-            double           ratio = d / r;
-            weights[j] = 1 - (ratio * ratio * ratio);
-            weightsum += weights[j];
-            xiw       += weights[j] * npos;
-        }
+                                            for(unsigned int j = 0; j < neighbors.size(); j++)
+                                            {
+                                                int& k = neighbors[j];
+                                                const SlVector3& npos = particles[k];
+                                                double d = mag(pos - npos);
+                                                double ratio = d / r;
+                                                weights[j] = 1 - (ratio * ratio * ratio);
+                                                weightsum += weights[j];
+                                                xiw += weights[j] * npos;
+                                            }
 
-        if(weightsum < 0.01)
-        {
-            G[i].setIdentity();
-            factors[i] = 1.0;
-            continue;
-        }
+                                            if(weightsum < 0.01)
+                                            {
+                                                G[i].setIdentity();
+                                                factors[i] = 1.0;
+                                                return;
+                                            }
 
-        xiw /= weightsum;
-        G[i] = 0.0;
-        for(unsigned int j = 0; j < neighbors.size(); j++)
-        {
-            int              k    = neighbors[j];
-            const SlVector3& npos = particles[k];
-            SlVector3        d    = npos - xiw;
-            G[i] += weights[j] * SlMatrix3x3(d[0] * d[0], d[0] * d[1], d[0] * d[2],
-                                             d[1] * d[0], d[1] * d[1], d[1] * d[2],
-                                             d[2] * d[0], d[2] * d[1], d[2] * d[2]);
-        }
+                                            xiw /= weightsum;
+                                            G[i] = 0.0;
+                                            for(unsigned int j = 0; j < neighbors.size(); j++)
+                                            {
+                                                int k = neighbors[j];
+                                                const SlVector3& npos = particles[k];
+                                                SlVector3 d = npos - xiw;
+                                                G[i] += weights[j] * SlMatrix3x3(d[0] * d[0], d[0] * d[1], d[0] * d[2],
+                                                                                 d[1] * d[0], d[1] * d[1], d[1] * d[2],
+                                                                                 d[2] * d[0], d[2] * d[1], d[2] * d[2]);
+                                            }
 
-        G[i] /= weightsum;
-        SlMatrix3x3 vecs;
-        SlVector3   vals;
-        SlSymetricEigenDecomp(G[i], vals, vecs);
+                                            G[i] /= weightsum;
+                                            SlMatrix3x3 vecs;
+                                            SlVector3 vals;
+                                            SlSymetricEigenDecomp(G[i], vals, vecs);
 
-        int maxEval = 0;
-        if(vals[1] > vals[0]) maxEval = 1;
-        if(vals[2] > vals[maxEval]) maxEval = 2;
-        double    temp = vals[0];  vals[0] = vals[maxEval]; vals[maxEval] = temp;
-        SlVector3 tempV(vecs(0, 0), vecs(1, 0), vecs(2, 0));
-        vecs(0, 0)       = vecs(0, maxEval); vecs(1, 0) = vecs(1, maxEval); vecs(2, 0) = vecs(2, maxEval);
-        vecs(0, maxEval) = tempV[0]; vecs(1, maxEval) = tempV[1]; vecs(2, maxEval) = tempV[2];
+                                            int maxEval = 0;
+                                            if(vals[1] > vals[0]) maxEval = 1;
+                                            if(vals[2] > vals[maxEval]) maxEval = 2;
+                                            double temp = vals[0];  vals[0] = vals[maxEval]; vals[maxEval] = temp;
+                                            SlVector3 tempV(vecs(0, 0), vecs(1, 0), vecs(2, 0));
+                                            vecs(0, 0) = vecs(0, maxEval); vecs(1, 0) = vecs(1, maxEval); vecs(2, 0) = vecs(2, maxEval);
+                                            vecs(0, maxEval) = tempV[0]; vecs(1, maxEval) = tempV[1]; vecs(2, maxEval) = tempV[2];
 
-        double maxT = vals[0] / maxStretch;
-        vals[0] = 1.0 / (vals[0]);
-        vals[1] = 1.0 / (fmax<double>(vals[1], maxT));
-        vals[2] = 1.0 / (fmax<double>(vals[2], maxT));
+                                            double maxT = vals[0] / maxStretch;
+                                            vals[0] = 1.0 / (vals[0]);
+                                            vals[1] = 1.0 / (fmax<double>(vals[1], maxT));
+                                            vals[2] = 1.0 / (fmax<double>(vals[2], maxT));
 
-        vals /= cbrt(vals[0] * vals[1] * vals[2]);      // make sure det(G) = 1
-        // smooth falloff with decreasing # of neighbors
-        double alpha = fmax(0.0, (neighbors.size() - minneighbors) / (nneighbors - minneighbors));
-        vals[0] = pow(vals[0], alpha);
-        vals[1] = pow(vals[1], alpha);
-        vals[2] = pow(vals[2], alpha);
-        vals   /= cbrt(vals[0] * vals[1] * vals[2]);
-        G[i]    = vecs * diagonal(vals) * transpose(vecs);
-        // don't really need the left rotation, it doesn't change lengths
-        factors[i] = 1.0 / vals[0];
-    }
+                                            vals /= cbrt(vals[0] * vals[1] * vals[2]); // make sure det(G) = 1
+                                            // smooth falloff with decreasing # of neighbors
+                                            double alpha = fmax(0.0, (neighbors.size() - minneighbors) / (nneighbors - minneighbors));
+                                            vals[0] = pow(vals[0], alpha);
+                                            vals[1] = pow(vals[1], alpha);
+                                            vals[2] = pow(vals[2], alpha);
+                                            vals /= cbrt(vals[0] * vals[1] * vals[2]);
+                                            G[i] = vecs * diagonal(vals) * transpose(vecs);
+                                            // don't really need the left rotation, it doesn't change lengths
+                                            factors[i] = 1.0 / vals[0];
+                                        });
+
     return true;
 }
 
@@ -256,54 +262,59 @@ bool SmoothingGrid::rasterize(const std::vector<SlVector3>& particles,
     phi_min = DBL_MAX;
     phi_max = DBL_MAX;
 
-    for(unsigned int p = 0; p < particles.size(); p++)
-    {
-        SlVector3 pos(particles[p]);
-        double    r     = radii[p];
-        double    pinit = r * rinit;
-        double    pmax  = r * rmax;
-        double    pmin  = r * rmin;
-        int       width = (int)ceil(rmax / h) + 1;
+    //for(unsigned int p = 0; p < particles.size(); p++)
+    ParallelFuncs::parallel_for<size_t>(0, particles.size(),
+                                        [&](size_t p)
+                                        {
+                                            SlVector3 pos(particles[p]);
+                                            double r = radii[p];
+                                            double pinit = r * rinit;
+                                            double pmax = r * rmax;
+                                            double pmin = r * rmin;
+                                            int width = (int)ceil(rmax / h) + 1;
 
-        SlInt3 bin;
-        bin[0] = (int)((pos[0] - bbMin[0]) / h);
-        bin[1] = (int)((pos[1] - bbMin[1]) / h);
-        bin[2] = (int)((pos[2] - bbMin[2]) / h);
+                                            SlInt3 bin;
+                                            bin[0] = (int)((pos[0] - bbMin[0]) / h);
+                                            bin[1] = (int)((pos[1] - bbMin[1]) / h);
+                                            bin[2] = (int)((pos[2] - bbMin[2]) / h);
 
-        unsigned int imax = fmin(bin[0] + width + 2, nx);
-        unsigned int jmax = fmin(bin[1] + width + 2, ny);
-        unsigned int kmax = fmin(bin[2] + width + 2, nz);
+                                            unsigned int imax = fmin(bin[0] + width + 2, nx);
+                                            unsigned int jmax = fmin(bin[1] + width + 2, ny);
+                                            unsigned int kmax = fmin(bin[2] + width + 2, nz);
 
-        for(unsigned int i = fmax(bin[0] - width, 0); i < imax; i++)
-        {
-            for(unsigned int j = fmax(bin[1] - width, 0); j < jmax; j++)
-            {
-                // for the inner most loop, the i and j coordinates do not change
-                // as we are looking for sqrmag of the distance, we can precomupte
-                // the first two terms and only worry about the last term during the loop
-                // this reduces the computation to 4 adds, one multiply, and a min in each
-                // iteration of the inner most loop.
-                unsigned int k     = fmax(bin[2] - width, 0);
-                double       d     = k * h + bbMin[2] - pos[2];
-                double       psum  = sqr(i * h + bbMin[0] - pos[0]) + sqr(j * h + bbMin[1] - pos[1]);
-                double*      pptr  = &(phi(i, j, k));
-                double*      mxptr = &(phi_max(i, j, k));
-                double*      mnptr = &(phi_min(i, j, k));
+                                            for(unsigned int i = fmax(bin[0] - width, 0); i < imax; i++)
+                                            {
+                                                for(unsigned int j = fmax(bin[1] - width, 0); j < jmax; j++)
+                                                {
+                                                    // for the inner most loop, the i and j coordinates do not change
+                                                    // as we are looking for sqrmag of the distance, we can precomupte
+                                                    // the first two terms and only worry about the last term during the loop
+                                                    // this reduces the computation to 4 adds, one multiply, and a min in each
+                                                    // iteration of the inner most loop.
+                                                    unsigned int k = fmax(bin[2] - width, 0);
+                                                    double d = k * h + bbMin[2] - pos[2];
+                                                    double psum = sqr(i * h + bbMin[0] - pos[0]) + sqr(j * h + bbMin[1] - pos[1]);
+                                                    double* pptr = &(phi(i, j, k));
+                                                    double* mxptr = &(phi_max(i, j, k));
+                                                    double* mnptr = &(phi_min(i, j, k));
 
-                for(; k < kmax; k++, d += h, pptr++, mxptr++, mnptr++)
-                {
-                    double dist = sqrt(psum + sqr(d));
-                    double val  = dist - pinit;
-                    if(val < (*pptr))
-                    {
-                        (*pptr)  = val;
-                        (*mxptr) = dist - pmax;
-                        (*mnptr) = dist - pmin;
-                    }
-                }
-            }
-        }
-    }
+                                                    for(; k < kmax; k++, d += h, pptr++, mxptr++, mnptr++)
+                                                    {
+                                                        double dist = sqrt(psum + sqr(d));
+                                                        double val = dist - pinit;
+
+                                                        phi_lock(i, j, k).lock();
+                                                        if(val < (*pptr))
+                                                        {
+                                                            (*pptr) = val;
+                                                            (*mxptr) = dist - pmax;
+                                                            (*mnptr) = dist - pmin;
+                                                        }
+                                                        phi_lock(i, j, k).unlock();
+                                                    }
+                                                }
+                                            }
+                                        });
 
     return true;
 }
@@ -409,15 +420,18 @@ SmoothingGrid::SmoothingGrid(double h, double rmin, double rmax, double rinit, d
     bbMin[0] = bbMin[1] = bbMin[2] = DBL_MAX;
     bbMax[0] = bbMax[1] = bbMax[2] = -DBL_MAX;
 
-    for(std::vector<SlVector3>::const_iterator i = particles.begin(); i != particles.end(); i++)
-    {
-        bbMin[0] = fmin(bbMin[0], (*i)[0]);
-        bbMin[1] = fmin(bbMin[1], (*i)[1]);
-        bbMin[2] = fmin(bbMin[2], (*i)[2]);
-        bbMax[0] = fmax(bbMax[0], (*i)[0]);
-        bbMax[1] = fmax(bbMax[1], (*i)[1]);
-        bbMax[2] = fmax(bbMax[2], (*i)[2]);
-    }
+    ParallelSTL::min_max_vector<double, SlVector3>(particles, bbMin, bbMax);
+    //for(std::vector<SlVector3>::const_iterator i = particles.begin(); i != particles.end(); i++)
+    //{
+    //    bbMin[0] = fmin(bbMin[0], (*i)[0]);
+    //    bbMin[1] = fmin(bbMin[1], (*i)[1]);
+    //    bbMin[2] = fmin(bbMin[2], (*i)[2]);
+    //    bbMax[0] = fmax(bbMax[0], (*i)[0]);
+    //    bbMax[1] = fmax(bbMax[1], (*i)[1]);
+    //    bbMax[2] = fmax(bbMax[2], (*i)[2]);
+    //}
+
+
     // increase the bounding box by rmax + something a little bigger than the stencil size
     double maxFactor = 1;
     if(flags & SmoothingGrid::NEIGHBOR_ANISOTROPY)
@@ -454,6 +468,7 @@ SmoothingGrid::SmoothingGrid(double h, double rmin, double rmax, double rinit, d
     accepted.allocate(nx, ny, nz);
     phi_max.allocate(nx, ny, nz);
     phi_min.allocate(nx, ny, nz);
+    phi_lock.allocate(nx, ny, nz);
 
     if(flags & VARIABLE_RADIUS)
     {

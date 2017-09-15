@@ -32,6 +32,7 @@
 #include "marchingTet.H"
 #include <float.h>
 
+#include <tbb/tbb.h>
 
 int gettimeofday(struct timeval* tp, struct timezone* tzp)
 {
@@ -362,6 +363,22 @@ int main(int argc, char** argv)
     if(verboseFlag)
         std::cout << "Reading the file took " << (endTime.tv_sec - startTime.tv_sec) +
         (endTime.tv_usec - startTime.tv_usec) * 1.0e-6 << std::endl;
+
+
+
+
+
+
+    static tbb::task_scheduler_init threadInit = tbb::task_scheduler_init::automatic;
+    (void)threadInit;
+
+
+
+
+
+
+
+
 
     gettimeofday(&startTime, NULL);
     SmoothingGrid grid(h, rmin, rmax, rinit, velGain, maxStretch, flags, particles, radii, velocities);

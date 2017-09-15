@@ -83,8 +83,9 @@ SlVector3 MarchingTet::createVertexCR(const SlArray3D<Real>& phi, SlVector3& a, 
             while(sqrMag(right - left) > 1E-10)
             {
                 midPoint = (a + b) * 0.5;
-                if((catmullrom(phi, left) * catmullrom(phi, midPoint)) < 0.0) right = midPoint;
-                else if((catmullrom(phi, right) * catmullrom(phi, midPoint)) < 0.0)
+                Real phiMid = catmullrom(phi, midPoint);
+                if((catmullrom(phi, left) * phiMid) < 0.0) right = midPoint;
+                else if((catmullrom(phi, right) * phiMid) < 0.0)
                     left = midPoint;
                 else break;
             }
@@ -206,8 +207,8 @@ void MarchingTet::buildTriangleMesh(const SlArray3D<Real>& phi, std::vector<SlTr
     triangles.clear();
     meshPts.clear();
 
-    triangles.reserve(1000000);
-    meshPts.reserve(1000000);
+    triangles.reserve(nx_ * ny_ * nz_);
+    meshPts.reserve(nx_ * ny_ * nz_);
 
     //Traverse x faces to look for intersections.
     int       i, j, k;

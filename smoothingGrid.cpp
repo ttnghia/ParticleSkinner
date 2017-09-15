@@ -205,20 +205,20 @@ bool SmoothingGrid::rasterize(const std::vector<SlVector3>& particles)
                                             bin[1] = (int)((pos[1] - bbMin[1]) / h);
                                             bin[2] = (int)((pos[2] - bbMin[2]) / h);
 
-                                            unsigned int imax = fmin(bin[0] + width + 2, nx);
-                                            unsigned int jmax = fmin(bin[1] + width + 2, ny);
-                                            unsigned int kmax = fmin(bin[2] + width + 2, nz);
+                                            unsigned int imax = (unsigned int)fmin(bin[0] + width + 2, nx);
+                                            unsigned int jmax = (unsigned int)fmin(bin[1] + width + 2, ny);
+                                            unsigned int kmax = (unsigned int)fmin(bin[2] + width + 2, nz);
 
-                                            for(unsigned int i = fmax(bin[0] - width, 0); i < imax; i++)
+                                            for(unsigned int i = (unsigned int)fmax(bin[0] - width, 0); i < imax; i++)
                                             {
-                                                for(unsigned int j = fmax(bin[1] - width, 0); j < jmax; j++)
+                                                for(unsigned int j = (unsigned int)fmax(bin[1] - width, 0); j < jmax; j++)
                                                 {
                                                     // for the inner most loop, the i and j coordinates do not change
                                                     // as we are looking for sqrmag of the distance, we can precomupte
                                                     // the first two terms and only worry about the last term during the loop
                                                     // this reduces the computation to 4 adds, one multiply, and a min in each
                                                     // iteration of the inner most loop.
-                                                    unsigned int k = fmax(bin[2] - width, 0);
+                                                    unsigned int k = (unsigned int)fmax(bin[2] - width, 0);
                                                     Real d = k * h + bbMin[2] - pos[2];
                                                     Real psum = sqr(i * h + bbMin[0] - pos[0]) + sqr(j * h + bbMin[1] - pos[1]);
                                                     Real* dptr = &(phi(i, j, k));
@@ -282,20 +282,20 @@ bool SmoothingGrid::rasterize(const std::vector<SlVector3>& particles,
                                             bin[1] = (int)((pos[1] - bbMin[1]) / h);
                                             bin[2] = (int)((pos[2] - bbMin[2]) / h);
 
-                                            unsigned int imax = fmin(bin[0] + width + 2, nx);
-                                            unsigned int jmax = fmin(bin[1] + width + 2, ny);
-                                            unsigned int kmax = fmin(bin[2] + width + 2, nz);
+                                            unsigned int imax = (unsigned int)fmin(bin[0] + width + 2, nx);
+                                            unsigned int jmax = (unsigned int)fmin(bin[1] + width + 2, ny);
+                                            unsigned int kmax = (unsigned int)fmin(bin[2] + width + 2, nz);
 
-                                            for(unsigned int i = fmax(bin[0] - width, 0); i < imax; i++)
+                                            for(unsigned int i = (unsigned int)fmax(bin[0] - width, 0); i < imax; i++)
                                             {
-                                                for(unsigned int j = fmax(bin[1] - width, 0); j < jmax; j++)
+                                                for(unsigned int j = (unsigned int)fmax(bin[1] - width, 0); j < jmax; j++)
                                                 {
                                                     // for the inner most loop, the i and j coordinates do not change
                                                     // as we are looking for sqrmag of the distance, we can precomupte
                                                     // the first two terms and only worry about the last term during the loop
                                                     // this reduces the computation to 4 adds, one multiply, and a min in each
                                                     // iteration of the inner most loop.
-                                                    unsigned int k = fmax(bin[2] - width, 0);
+                                                    unsigned int k = (unsigned int)fmax(bin[2] - width, 0);
                                                     Real d = k * h + bbMin[2] - pos[2];
                                                     Real psum = sqr(i * h + bbMin[0] - pos[0]) + sqr(j * h + bbMin[1] - pos[1]);
                                                     Real* pptr = &(phi(i, j, k));
@@ -346,20 +346,20 @@ bool SmoothingGrid::rasterize(const std::vector<SlVector3>&   particles,
                                             bin[1] = (int)((pos[1] - bbMin[1]) / h);
                                             bin[2] = (int)((pos[2] - bbMin[2]) / h);
 
-                                            unsigned int imax = fmin(bin[0] + width + 2, nx);
-                                            unsigned int jmax = fmin(bin[1] + width + 2, ny);
-                                            unsigned int kmax = fmin(bin[2] + width + 2, nz);
+                                            unsigned int imax = (unsigned int)fmin(bin[0] + width + 2, nx);
+                                            unsigned int jmax = (unsigned int)fmin(bin[1] + width + 2, ny);
+                                            unsigned int kmax = (unsigned int)fmin(bin[2] + width + 2, nz);
 
-                                            for(unsigned int i = fmax(bin[0] - width, 0); i < imax; i++)
+                                            for(unsigned int i = (unsigned int)fmax(bin[0] - width, 0); i < imax; i++)
                                             {
-                                                for(unsigned int j = fmax(bin[1] - width, 0); j < jmax; j++)
+                                                for(unsigned int j = (unsigned int)fmax(bin[1] - width, 0); j < jmax; j++)
                                                 {
                                                     // for the inner most loop, the i and j coordinates do not change
                                                     // as we are looking for sqrmag of the distance, we can precomupte
                                                     // the first two terms and only worry about the last term during the loop
                                                     // Here the terms are columns from the G matrix, we add a h* the third col
                                                     // every time we increas k
-                                                    unsigned int k = fmax(bin[2] - width, 0);
+                                                    unsigned int k = (unsigned int)fmax(bin[2] - width, 0);
                                                     SlVector3 psum = (i * h + bbMin[0] - pos[0]) * Gc0 + (j * h + bbMin[1] - pos[1]) * Gc1 + (k * h + bbMin[2] - pos[2]) * Gc2;
                                                     SlVector3 hGc2 = h * Gc2;
                                                     Real* dptr = &(phi(i, j, k));
@@ -461,9 +461,9 @@ SmoothingGrid::SmoothingGrid(Real h, Real rmin, Real rmax, Real rinit, Real gain
     bbMax[1] = ceil((bbMax[1] / h)) * h;
     bbMax[2] = ceil((bbMax[2] / h)) * h;
 
-    nx = ((bbMax[0] - bbMin[0]) / h);
-    ny = ((bbMax[1] - bbMin[1]) / h);
-    nz = ((bbMax[2] - bbMin[2]) / h);
+    nx = (int)((bbMax[0] - bbMin[0]) / h);
+    ny = (int)((bbMax[1] - bbMin[1]) / h);
+    nz = (int)((bbMax[2] - bbMin[2]) / h);
 
 
     if(flags & VERBOSE) std::cout << "h = " << h << " nx = " << nx << " ny = " << ny << " nz = " << nz << std::endl;

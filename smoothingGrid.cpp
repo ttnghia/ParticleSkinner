@@ -766,88 +766,91 @@ void redistance(SlArray3D<Real>& phi, SlArray3D<Real>& newPhi, SlArray3D<char>& 
     newPhi   = REAL_MAX;
     accepted = 0;
     // determine the inital distance of neighbor grid point
-    for(int i = 1; i < nx - 1; i++)
-    {
+
+    /*for(int i = 1; i < nx - 1; i++)
+       {
         for(int j = 1; j < ny - 1; j++)
         {
-            for(int k = 1; k < nz - 1; k++)
-            {
-                Real x = phi(i, j, k);
-                Real y = phi(i + 1, j, k);
-                if(sign(x) != sign(y))
-                {
-                    if(fabs(x) + fabs(y) > 0.9 * h)
-                    {
-                        newPhi(i, j, k)       = absmin2(newPhi(i, j, k), h * x / fabs(x - y));
-                        newPhi(i + 1, j, k)   = absmin2(newPhi(i + 1, j, k), h * y / fabs(x - y));
-                        accepted(i, j, k)     = sign(newPhi(i, j, k));
-                        accepted(i + 1, j, k) = sign(newPhi(i + 1, j, k));
-                    }
-                    else
-                    {
-                        if(accepted(i, j, k) == 0)
-                        {
-                            newPhi(i, j, k)   = x;
-                            accepted(i, j, k) = sign(newPhi(i, j, k)) * 3;
-                        }
-                        if(accepted(i + 1, j, k) == 0)
-                        {
-                            newPhi(i + 1, j, k)   = y;
-                            accepted(i + 1, j, k) = sign(newPhi(i + 1, j, k)) * 3;
-                        }
-                    }
-                }
-                y = phi(i, j + 1, k);
-                if(sign(x) != sign(y))
-                {
-                    if(fabs(x) + fabs(y) > 0.9 * h)
-                    {
-                        newPhi(i, j, k)       = absmin2(newPhi(i, j, k), h * x / fabs(x - y));
-                        newPhi(i, j + 1, k)   = absmin2(newPhi(i, j + 1, k), h * y / fabs(x - y));
-                        accepted(i, j, k)     = sign(newPhi(i, j, k));
-                        accepted(i, j + 1, k) = sign(newPhi(i, j + 1, k));
-                    }
-                    else
-                    {
-                        if(fabs(accepted(i, j, k)) == 0)
-                        {
-                            newPhi(i, j, k)   = x;
-                            accepted(i, j, k) = sign(newPhi(i, j, k)) * 3;
-                        }
-                        if(fabs(accepted(i, j + 1, k)) == 0)
-                        {
-                            newPhi(i, j + 1, k)   = y;
-                            accepted(i, j + 1, k) = sign(newPhi(i, j + 1, k)) * 3;
-                        }
-                    }
-                }
-                y = phi(i, j, k + 1);
-                if(sign(x) != sign(y))
-                {
-                    if(fabs(x) + fabs(y) > 0.9 * h)
-                    {
-                        newPhi(i, j, k)       = absmin2(newPhi(i, j, k), h * x / fabs(x - y));
-                        newPhi(i, j, k + 1)   = absmin2(newPhi(i, j, k + 1), h * y / fabs(x - y));
-                        accepted(i, j, k)     = sign(newPhi(i, j, k));
-                        accepted(i, j, k + 1) = sign(newPhi(i, j, k + 1));
-                    }
-                    else
-                    {
-                        if(fabs(accepted(i, j, k)) == 0)
-                        {
-                            newPhi(i, j, k)   = x;
-                            accepted(i, j, k) = sign(newPhi(i, j, k)) * 3;
-                        }
-                        if(fabs(accepted(i, j, k + 1)) == 0)
-                        {
-                            newPhi(i, j, k + 1)   = y;
-                            accepted(i, j, k + 1) = sign(newPhi(i, j, k + 1)) * 3;
-                        }
-                    }
-                }
-            }
-        }
-    }
+            for(int k = 1; k < nz - 1; k++)*/
+    ParallelFuncs::parallel_for_row_major<int>(1, nx - 1,
+                                               1, ny - 1,
+                                               1, nz - 1,
+                                               [&](int i, int j, int k)
+                                               {
+                                                   Real x = phi(i, j, k);
+                                                   Real y = phi(i + 1, j, k);
+                                                   if(sign(x) != sign(y))
+                                                   {
+                                                       if(fabs(x) + fabs(y) > 0.9 * h)
+                                                       {
+                                                           newPhi(i, j, k) = absmin2(newPhi(i, j, k), h * x / fabs(x - y));
+                                                           newPhi(i + 1, j, k) = absmin2(newPhi(i + 1, j, k), h * y / fabs(x - y));
+                                                           accepted(i, j, k) = sign(newPhi(i, j, k));
+                                                           accepted(i + 1, j, k) = sign(newPhi(i + 1, j, k));
+                                                       }
+                                                       else
+                                                       {
+                                                           if(accepted(i, j, k) == 0)
+                                                           {
+                                                               newPhi(i, j, k) = x;
+                                                               accepted(i, j, k) = sign(newPhi(i, j, k)) * 3;
+                                                           }
+                                                           if(accepted(i + 1, j, k) == 0)
+                                                           {
+                                                               newPhi(i + 1, j, k) = y;
+                                                               accepted(i + 1, j, k) = sign(newPhi(i + 1, j, k)) * 3;
+                                                           }
+                                                       }
+                                                   }
+                                                   y = phi(i, j + 1, k);
+                                                   if(sign(x) != sign(y))
+                                                   {
+                                                       if(fabs(x) + fabs(y) > 0.9 * h)
+                                                       {
+                                                           newPhi(i, j, k) = absmin2(newPhi(i, j, k), h * x / fabs(x - y));
+                                                           newPhi(i, j + 1, k) = absmin2(newPhi(i, j + 1, k), h * y / fabs(x - y));
+                                                           accepted(i, j, k) = sign(newPhi(i, j, k));
+                                                           accepted(i, j + 1, k) = sign(newPhi(i, j + 1, k));
+                                                       }
+                                                       else
+                                                       {
+                                                           if(fabs(accepted(i, j, k)) == 0)
+                                                           {
+                                                               newPhi(i, j, k) = x;
+                                                               accepted(i, j, k) = sign(newPhi(i, j, k)) * 3;
+                                                           }
+                                                           if(fabs(accepted(i, j + 1, k)) == 0)
+                                                           {
+                                                               newPhi(i, j + 1, k) = y;
+                                                               accepted(i, j + 1, k) = sign(newPhi(i, j + 1, k)) * 3;
+                                                           }
+                                                       }
+                                                   }
+                                                   y = phi(i, j, k + 1);
+                                                   if(sign(x) != sign(y))
+                                                   {
+                                                       if(fabs(x) + fabs(y) > 0.9 * h)
+                                                       {
+                                                           newPhi(i, j, k) = absmin2(newPhi(i, j, k), h * x / fabs(x - y));
+                                                           newPhi(i, j, k + 1) = absmin2(newPhi(i, j, k + 1), h * y / fabs(x - y));
+                                                           accepted(i, j, k) = sign(newPhi(i, j, k));
+                                                           accepted(i, j, k + 1) = sign(newPhi(i, j, k + 1));
+                                                       }
+                                                       else
+                                                       {
+                                                           if(fabs(accepted(i, j, k)) == 0)
+                                                           {
+                                                               newPhi(i, j, k) = x;
+                                                               accepted(i, j, k) = sign(newPhi(i, j, k)) * 3;
+                                                           }
+                                                           if(fabs(accepted(i, j, k + 1)) == 0)
+                                                           {
+                                                               newPhi(i, j, k + 1) = y;
+                                                               accepted(i, j, k + 1) = sign(newPhi(i, j, k + 1)) * 3;
+                                                           }
+                                                       }
+                                                   }
+                                               });
 
 #if 1
     //bool forward = true;

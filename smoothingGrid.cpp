@@ -850,7 +850,10 @@ void redistance(SlArray3D<Real>& phi, SlArray3D<Real>& newPhi, SlArray3D<char>& 
     }
 
 #if 1
-    bool forward = true;
+    //bool forward = true;
+    const static int forward_i[8] = { 1, 1, 1, 1, 0, 0, 0, 0 };
+    const static int forward_j[8] = { 1, 1, 0, 0, 1, 1, 0, 0 };
+    const static int forward_k[8] = { 1, 0, 1, 0, 1, 0, 1, 0 };
 
     for(int l = 0; l < 8; ++l)
     {
@@ -859,13 +862,12 @@ void redistance(SlArray3D<Real>& phi, SlArray3D<Real>& newPhi, SlArray3D<char>& 
                                                    1, nz - 1,
                                                    [&](int ii, int jj, int kk)
                                                    {
-                                                       int i = forward ? ii : nx - ii - 1;
-                                                       int j = forward ? jj : ny - jj - 1;
-                                                       int k = forward ? kk : nz - kk - 1;
+                                                       int i = forward_i[l] ? ii : nx - ii - 1;
+                                                       int j = forward_j[l] ? jj : ny - jj - 1;
+                                                       int k = forward_k[l] ? kk : nz - kk - 1;
 
                                                        if(abs(accepted(i, j, k)) % 2 != 1) sweepPoint(newPhi, accepted, i, j, k, h);
                                                    });
-        forward = !forward;
     }
 #else
     // sweeping

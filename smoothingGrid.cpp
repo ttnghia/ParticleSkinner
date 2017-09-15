@@ -64,46 +64,47 @@ bool SmoothingGrid::computeG(const std::vector<SlVector3>& particles, const std:
     G.resize(particles.size());
     factors.resize(particles.size());
 
-    for(unsigned int i = 0; i < particles.size(); i++)
-    {
-        SlVector3 v(velocities[i]);
-        Real      s = mag(velocities[i]);
-        if(s > 0.01)
-        {
-            v /= s;
-        }
-        else
-        {
-            G[i].setIdentity();
-            factors[i] = 1;
-            continue;
-        }
+    ParallelFuncs::parallel_for<size_t>(0, particles.size(),
+                                        [&](size_t i)
+                                        {
+                                            SlVector3 v(velocities[i]);
+                                            Real s = mag(velocities[i]);
+                                            if(s > 0.01)
+                                            {
+                                                v /= s;
+                                            }
+                                            else
+                                            {
+                                                G[i].setIdentity();
+                                                factors[i] = 1;
+                                                return;
+                                            }
 
-        s = fmin(maxS, s * gain);
+                                            s = fmin(maxS, s * gain);
 
-        Real e12 = 1.0 + s;
-        Real e0  = 1.0 / sqr(e12);
+                                            Real e12 = 1.0 + s;
+                                            Real e0 = 1.0 / sqr(e12);
 
-        // find two vectors orthogonal to v
-        SlVector3 v1(cross(v, SlVector3(1, 0, 0)));
-        Real      m = sqrMag(v1);
-        if(m < 0.01)
-        {
-            v1.set(cross(v, SlVector3(0, 1, 0)));
-            m = sqrMag(v1);
-        }
-        v1 /= sqrt(m);
-        SlVector3 v2 = cross(v, v1);
-        normalize(v2);
+                                            // find two vectors orthogonal to v
+                                            SlVector3 v1(cross(v, SlVector3(1, 0, 0)));
+                                            Real m = sqrMag(v1);
+                                            if(m < 0.01)
+                                            {
+                                                v1.set(cross(v, SlVector3(0, 1, 0)));
+                                                m = sqrMag(v1);
+                                            }
+                                            v1 /= sqrt(m);
+                                            SlVector3 v2 = cross(v, v1);
+                                            normalize(v2);
 
 
-        G[i].set(e0 * v[0], e0 * v[1], e0 * v[2],
-                 e12 * v1[0], e12 * v1[1], e12 * v1[2],
-                 e12 * v2[0], e12 * v2[1], e12 * v2[2]);
-        // don't really need the left rotation, it doesn't change lengths
+                                            G[i].set(e0 * v[0], e0 * v[1], e0 * v[2],
+                                                     e12 * v1[0], e12 * v1[1], e12 * v1[2],
+                                                     e12 * v2[0], e12 * v2[1], e12 * v2[2]);
+                                            // don't really need the left rotation, it doesn't change lengths
 
-        factors[i] = 1 / e0;
-    }
+                                            factors[i] = 1 / e0;
+                                        });
     return true;
 }
 
@@ -119,73 +120,74 @@ bool SmoothingGrid::computeG(const std::vector<SlVector3>& particles, Real rmax,
     std::vector<int> neighbors;
     neighbors.reserve(nneighbors);
 
-    for(unsigned int i = 0; i < particles.size(); i++)
-    {
-        SlVector3        xiw(0.0);
-        Real             weightsum = 0.0;
-        const SlVector3& pos       = particles[i];
+    ParallelFuncs::parallel_for<size_t>(0, particles.size(),
+                                        [&](size_t i)
+                                        {
+                                            SlVector3 xiw(0.0);
+                                            Real weightsum = 0.0;
+                                            const SlVector3& pos = particles[i];
 
-        kdtree->neighbors(particles, pos, nneighbors, r, neighbors);
+                                            kdtree->neighbors(particles, pos, nneighbors, r, neighbors);
 
-        for(unsigned int j = 0; j < neighbors.size(); j++)
-        {
-            int&             k     = neighbors[j];
-            const SlVector3& npos  = particles[k];
-            Real             d     = mag(pos - npos);
-            Real             ratio = d / r;
-            weights[j] = 1 - (ratio * ratio * ratio);
-            weightsum += weights[j];
-            xiw       += weights[j] * npos;
-        }
+                                            for(unsigned int j = 0; j < neighbors.size(); j++)
+                                            {
+                                                int& k = neighbors[j];
+                                                const SlVector3& npos = particles[k];
+                                                Real d = mag(pos - npos);
+                                                Real ratio = d / r;
+                                                weights[j] = 1 - (ratio * ratio * ratio);
+                                                weightsum += weights[j];
+                                                xiw += weights[j] * npos;
+                                            }
 
-        if(weightsum < 0.01)
-        {
-            G[i].setIdentity();
-            factors[i] = 1.0;
-            continue;
-        }
+                                            if(weightsum < 0.01)
+                                            {
+                                                G[i].setIdentity();
+                                                factors[i] = 1.0;
+                                                return;
+                                            }
 
-        xiw /= weightsum;
-        G[i] = 0.0;
-        for(unsigned int j = 0; j < neighbors.size(); j++)
-        {
-            int              k    = neighbors[j];
-            const SlVector3& npos = particles[k];
-            SlVector3        d    = npos - xiw;
-            G[i] += weights[j] * SlMatrix3x3(d[0] * d[0], d[0] * d[1], d[0] * d[2],
-                                             d[1] * d[0], d[1] * d[1], d[1] * d[2],
-                                             d[2] * d[0], d[2] * d[1], d[2] * d[2]);
-        }
+                                            xiw /= weightsum;
+                                            G[i] = 0.0;
+                                            for(unsigned int j = 0; j < neighbors.size(); j++)
+                                            {
+                                                int k = neighbors[j];
+                                                const SlVector3& npos = particles[k];
+                                                SlVector3 d = npos - xiw;
+                                                G[i] += weights[j] * SlMatrix3x3(d[0] * d[0], d[0] * d[1], d[0] * d[2],
+                                                                                 d[1] * d[0], d[1] * d[1], d[1] * d[2],
+                                                                                 d[2] * d[0], d[2] * d[1], d[2] * d[2]);
+                                            }
 
-        G[i] /= weightsum;
-        SlMatrix3x3 vecs;
-        SlVector3   vals;
-        SlSymetricEigenDecomp(G[i], vals, vecs);
+                                            G[i] /= weightsum;
+                                            SlMatrix3x3 vecs;
+                                            SlVector3 vals;
+                                            SlSymetricEigenDecomp(G[i], vals, vecs);
 
-        int maxEval = 0;
-        if(vals[1] > vals[0]) maxEval = 1;
-        if(vals[2] > vals[maxEval]) maxEval = 2;
-        Real      temp = vals[0];  vals[0] = vals[maxEval]; vals[maxEval] = temp;
-        SlVector3 tempV(vecs(0, 0), vecs(1, 0), vecs(2, 0));
-        vecs(0, 0)       = vecs(0, maxEval); vecs(1, 0) = vecs(1, maxEval); vecs(2, 0) = vecs(2, maxEval);
-        vecs(0, maxEval) = tempV[0]; vecs(1, maxEval) = tempV[1]; vecs(2, maxEval) = tempV[2];
+                                            int maxEval = 0;
+                                            if(vals[1] > vals[0]) maxEval = 1;
+                                            if(vals[2] > vals[maxEval]) maxEval = 2;
+                                            Real temp = vals[0];  vals[0] = vals[maxEval]; vals[maxEval] = temp;
+                                            SlVector3 tempV(vecs(0, 0), vecs(1, 0), vecs(2, 0));
+                                            vecs(0, 0) = vecs(0, maxEval); vecs(1, 0) = vecs(1, maxEval); vecs(2, 0) = vecs(2, maxEval);
+                                            vecs(0, maxEval) = tempV[0]; vecs(1, maxEval) = tempV[1]; vecs(2, maxEval) = tempV[2];
 
-        Real maxT = vals[0] / maxStretch;
-        vals[0] = 1.0 / (vals[0]);
-        vals[1] = 1.0 / (fmax<Real>(vals[1], maxT));
-        vals[2] = 1.0 / (fmax<Real>(vals[2], maxT));
+                                            Real maxT = vals[0] / maxStretch;
+                                            vals[0] = 1.0 / (vals[0]);
+                                            vals[1] = 1.0 / (fmax<Real>(vals[1], maxT));
+                                            vals[2] = 1.0 / (fmax<Real>(vals[2], maxT));
 
-        vals /= cbrt(vals[0] * vals[1] * vals[2]);  // make sure det(G) = 1
-                                                    // smooth falloff with decreasing # of neighbors
-        Real alpha = fmax(0.0, (neighbors.size() - minneighbors) / (nneighbors - minneighbors));
-        vals[0] = pow(vals[0], alpha);
-        vals[1] = pow(vals[1], alpha);
-        vals[2] = pow(vals[2], alpha);
-        vals   /= cbrt(vals[0] * vals[1] * vals[2]);
-        G[i]    = vecs * diagonal(vals) * transpose(vecs);
-        // don't really need the left rotation, it doesn't change lengths
-        factors[i] = 1.0 / vals[0];
-    }
+                                            vals /= cbrt(vals[0] * vals[1] * vals[2]); // make sure det(G) = 1
+                                                                                       // smooth falloff with decreasing # of neighbors
+                                            Real alpha = fmax(0.0, (neighbors.size() - minneighbors) / (nneighbors - minneighbors));
+                                            vals[0] = pow(vals[0], alpha);
+                                            vals[1] = pow(vals[1], alpha);
+                                            vals[2] = pow(vals[2], alpha);
+                                            vals /= cbrt(vals[0] * vals[1] * vals[2]);
+                                            G[i] = vecs * diagonal(vals) * transpose(vecs);
+                                            // don't really need the left rotation, it doesn't change lengths
+                                            factors[i] = 1.0 / vals[0];
+                                        });
     return true;
 }
 

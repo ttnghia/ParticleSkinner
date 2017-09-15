@@ -24,7 +24,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "marchingTet.H"
-#include "ParallelFuncs.h"
+
 
 Real MarchingTet::catmullrom(const SlArray3D<Real>& phi, SlVector3& x)
 {
@@ -119,47 +119,24 @@ MarchingTet::MarchingTet(int nx, int ny, int nz, Real h, const SlVector3& lc)
     xEdge.allocate(nx, ny - 1, nz - 1);
     yEdge.allocate(nx - 1, ny, nz - 1);
     zEdge.allocate(nx - 1, ny - 1, nz);
-
-
-    //for(int i = 0; i < nx; i++)
-    //    for(int j = 0; j < ny - 1; j++)
-    //        for(int k = 0; k < nz - 1; k++)
-    ParallelFuncs::parallel_for_row_major<int>(0, nx,
-                                               0, ny - 1,
-                                               0, nz - 1,
-                                               [&](int i, int j, int k)
-                                               {
-                                                   xFace(i, j, k) = xEdge(i, j, k) = -1;
-                                               });
-
-    /*for(int i = 0; i < nx - 1; i++)
-        for(int j = 0; j < ny; j++)
-            for(int k = 0; k < nz - 1; k++)*/
-    ParallelFuncs::parallel_for_row_major<int>(0, nx - 1,
-                                               0, ny,
-                                               0, nz - 1,
-                                               [&](int i, int j, int k)
-                                               {
-                                                   yFace(i, j, k) = yEdge(i, j, k) = -1;
-                                               });
-
-    /*for(int i = 0; i < nx - 1; i++)
+    for(int i = 0; i < nx; i++)
         for(int j = 0; j < ny - 1; j++)
-            for(int k = 0; k < nz; k++)*/
-    ParallelFuncs::parallel_for_row_major<int>(0, nx - 1,
-                                               0, ny - 1,
-                                               0, nz,
-                                               [&](int i, int j, int k)
-                                               {
-                                                   zFace(i, j, k) = zEdge(i, j, k) = -1;
-                                               });
-}
-
-void MarchingTet::push_triangle(const SlTri& tri)
-{
-    triLock.lock();
-    triangles_.push_back(tri);
-    triLock.unlock();
+            for(int k = 0; k < nz - 1; k++)
+            {
+                xFace(i, j, k) = xEdge(i, j, k) = -1;
+            }
+    for(int i = 0; i < nx - 1; i++)
+        for(int j = 0; j < ny; j++)
+            for(int k = 0; k < nz - 1; k++)
+            {
+                yFace(i, j, k) = yEdge(i, j, k) = -1;
+            }
+    for(int i = 0; i < nx - 1; i++)
+        for(int j = 0; j < ny - 1; j++)
+            for(int k = 0; k < nz; k++)
+            {
+                zFace(i, j, k) = zEdge(i, j, k) = -1;
+            }
 }
 
 bool MarchingTet::doTet(int e1, int e2, int e3, int e4, int e5, int e6, Real val0, Real val1,
@@ -173,52 +150,52 @@ bool MarchingTet::doTet(int e1, int e2, int e3, int e4, int e5, int e6, Real val
     switch(index)
     {
         case 1:
-            push_triangle(SlTri(e5, e3, e6));
+            triangles.push_back(SlTri(e5, e3, e6));
             break;
         case 2:
-            push_triangle(SlTri(e2, e4, e6));
+            triangles.push_back(SlTri(e2, e4, e6));
             break;
         case 3:
-            push_triangle(SlTri(e3, e4, e5));
-            push_triangle(SlTri(e3, e2, e4));
+            triangles.push_back(SlTri(e3, e4, e5));
+            triangles.push_back(SlTri(e3, e2, e4));
             break;
         case 4:
-            push_triangle(SlTri(e1, e5, e4));
+            triangles.push_back(SlTri(e1, e5, e4));
             break;
         case 5:
-            push_triangle(SlTri(e3, e4, e1));
-            push_triangle(SlTri(e3, e6, e4));
+            triangles.push_back(SlTri(e3, e4, e1));
+            triangles.push_back(SlTri(e3, e6, e4));
             break;
         case 6:
-            push_triangle(SlTri(e1, e6, e2));
-            push_triangle(SlTri(e1, e5, e6));
+            triangles.push_back(SlTri(e1, e6, e2));
+            triangles.push_back(SlTri(e1, e5, e6));
             break;
         case 7:
-            push_triangle(SlTri(e1, e3, e2));
+            triangles.push_back(SlTri(e1, e3, e2));
             break;
         case 8:
-            push_triangle(SlTri(e1, e2, e3));
+            triangles.push_back(SlTri(e1, e2, e3));
             break;
         case 9:
-            push_triangle(SlTri(e1, e6, e5));
-            push_triangle(SlTri(e1, e2, e6));
+            triangles.push_back(SlTri(e1, e6, e5));
+            triangles.push_back(SlTri(e1, e2, e6));
             break;
         case 10:
-            push_triangle(SlTri(e1, e6, e3));
-            push_triangle(SlTri(e1, e4, e6));
+            triangles.push_back(SlTri(e1, e6, e3));
+            triangles.push_back(SlTri(e1, e4, e6));
             break;
         case 11:
-            push_triangle(SlTri(e1, e4, e5));
+            triangles.push_back(SlTri(e1, e4, e5));
             break;
         case 12:
-            push_triangle(SlTri(e3, e4, e2));
-            push_triangle(SlTri(e3, e5, e4));
+            triangles.push_back(SlTri(e3, e4, e2));
+            triangles.push_back(SlTri(e3, e5, e4));
             break;
         case 13:
-            push_triangle(SlTri(e6, e4, e2));
+            triangles.push_back(SlTri(e6, e4, e2));
             break;
         case 14:
-            push_triangle(SlTri(e5, e6, e3));
+            triangles.push_back(SlTri(e5, e6, e3));
             break;
     }
     return true;
@@ -229,222 +206,172 @@ void MarchingTet::buildTriangleMesh(const SlArray3D<Real>& phi, std::vector<SlTr
     triangles.clear();
     meshPts.clear();
 
-    triangles_.reserve(1000000);
     triangles.reserve(1000000);
     meshPts.reserve(1000000);
-
 
     //Traverse x faces to look for intersections.
     int       i, j, k;
     SlVector3 a;
-
-
-    //for(i = 0, a[0] = lc_[0]; i < nx_; i++, a[0] = a[0] + h_)
-    //{
-    //    for(j = 0, a[1] = lc_[1]; j < ny_ - 1; j++, a[1] = a[1] + h_)
-    //    {
-    //        for(k = 0, a[2] = lc_[2]; k < nz_ - 1; k++, a[2] = a[2] + h_)
-    ParallelFuncs::parallel_for_row_major<int>(0, nx_,
-                                               0, ny_ - 1,
-                                               0, nz_ - 1,
-                                               [&](int i, int j, int k)
-                                               {
-                                                   Real bVal = phi(i, j, k + 1), cVal = phi(i, j + 1, k);
-                                                   if(bVal * cVal < 0.0)
-                                                   {
-                                                       SlVector3 a = lc_ + SlVector3(i, j, k) * h_;
-                                                       SlVector3 b = a, c = a;
-                                                       c[1] += h_;
-                                                       b[2] += h_;
-                                                       SlVector3 tmp = createVertexCR(phi, b, c, bVal, cVal);
-                                                       meshLock.lock();
-                                                       meshPts.push_back(tmp);
-                                                       meshLock.unlock();
-                                                       //meshPts.push_back(createVertex(b, c, bVal, cVal));
-                                                       xFace(i, j, k) = (int)meshPts.size() - 1;
-                                                   }
-                                               });
+    for(i = 0, a[0] = lc_[0]; i < nx_; i++, a[0] = a[0] + h_)
+    {
+        for(j = 0, a[1] = lc_[1]; j < ny_ - 1; j++, a[1] = a[1] + h_)
+        {
+            for(k = 0, a[2] = lc_[2]; k < nz_ - 1; k++, a[2] = a[2] + h_)
+            {
+                Real bVal = phi(i, j, k + 1), cVal = phi(i, j + 1, k);
+                if(bVal * cVal < 0.0)
+                {
+                    SlVector3 b = a, c = a;
+                    c[1] += h_;
+                    b[2] += h_;
+                    meshPts.push_back(createVertexCR(phi, b, c, bVal, cVal));
+                    //meshPts.push_back(createVertex(b, c, bVal, cVal));
+                    xFace(i, j, k) = (int)meshPts.size() - 1;
+                }
+            }
+        }
+    }
 
     //Traverse y faces to look for intersections.
-    //for(i = 0, a[0] = lc_[0]; i < nx_ - 1; i++, a[0] = a[0] + h_)
-    //{
-    //    for(j = 0, a[1] = lc_[1]; j < ny_; j++, a[1] = a[1] + h_)
-    //    {
-    //        for(k = 0, a[2] = lc_[2]; k < nz_ - 1; k++, a[2] = a[2] + h_)
-    ParallelFuncs::parallel_for_row_major<int>(0, nx_ - 1,
-                                               0, ny_,
-                                               0, nz_ - 1,
-                                               [&](int i, int j, int k)
-                                               {
-                                                   Real bVal = phi(i, j, k + 1), cVal = phi(i + 1, j, k);
-                                                   if(bVal * cVal < 0.0)
-                                                   {
-                                                       SlVector3 a = lc_ + SlVector3(i, j, k) * h_;
-                                                       SlVector3 b = a, c = a;
-                                                       c[0] += h_;
-                                                       b[2] += h_;
-                                                       SlVector3 tmp = createVertexCR(phi, b, c, bVal, cVal);
-                                                       meshLock.lock();
-                                                       meshPts.push_back(tmp);
-                                                       meshLock.unlock();
-
-                                                       //meshPts.push_back(createVertex(b, c, bVal, cVal));
-                                                       yFace(i, j, k) = (int)meshPts.size() - 1;
-                                                   }
-                                               });
-
-    //Traverse z faces to look for intersections.
-    /*for(i = 0, a[0] = lc_[0]; i < nx_ - 1; i++, a[0] = a[0] + h_)
-       {
-        for(j = 0, a[1] = lc_[1]; j < ny_ - 1; j++, a[1] = a[1] + h_)
-        {
-            for(k = 0, a[2] = lc_[2]; k < nz_; k++, a[2] = a[2] + h_)*/
-    ParallelFuncs::parallel_for_row_major<int>(0, nx_ - 1,
-                                               0, ny_ - 1,
-                                               0, nz_,
-                                               [&](int i, int j, int k)
-                                               {
-                                                   Real bVal = phi(i + 1, j, k), cVal = phi(i, j + 1, k);
-                                                   if(bVal * cVal < 0.0)
-                                                   {
-                                                       SlVector3 a = lc_ + SlVector3(i, j, k) * h_;
-                                                       SlVector3 b = a, c = a;
-                                                       c[1] += h_;
-                                                       b[0] += h_;
-                                                       SlVector3 tmp = createVertexCR(phi, b, c, bVal, cVal);
-                                                       meshLock.lock();
-                                                       meshPts.push_back(tmp);
-                                                       meshLock.unlock();
-                                                       //meshPts.push_back(createVertex(b, c, bVal, cVal));
-                                                       zFace(i, j, k) = (int)meshPts.size() - 1;
-                                                   }
-                                               });
-
-    //Traverse x Edges to look for intersections
-
-    /*for(i = 0, a[0] = lc_[0]; i < nx_ - 1; i++, a[0] = a[0] + h_)
-       {
+    for(i = 0, a[0] = lc_[0]; i < nx_ - 1; i++, a[0] = a[0] + h_)
+    {
         for(j = 0, a[1] = lc_[1]; j < ny_; j++, a[1] = a[1] + h_)
         {
-            for(k = 0, a[2] = lc_[2]; k < nz_; k++, a[2] = a[2] + h_)*/
-    ParallelFuncs::parallel_for_row_major<int>(0, nx_ - 1,
-                                               0, ny_,
-                                               0, nz_,
-                                               [&](int i, int j, int k)
-                                               {
-                                                   Real bVal = phi(i, j, k), cVal = phi(i + 1, j, k);
-                                                   if(bVal * cVal < 0.0)
-                                                   {
-                                                       SlVector3 a = lc_ + SlVector3(i, j, k) * h_;
-                                                       SlVector3 b = a, c = a;
-                                                       c[0] += h_;
-                                                       SlVector3 tmp = createVertexCR(phi, b, c, bVal, cVal);
-                                                       meshLock.lock();
-                                                       meshPts.push_back(tmp);
-                                                       meshLock.unlock();
-                                                       //meshPts.push_back(createVertex(b, c, bVal, cVal));
-                                                       xEdge(i, j, k) = (int)meshPts.size() - 1;
-                                                   }
-                                               });
+            for(k = 0, a[2] = lc_[2]; k < nz_ - 1; k++, a[2] = a[2] + h_)
+            {
+                Real bVal = phi(i, j, k + 1), cVal = phi(i + 1, j, k);
+                if(bVal * cVal < 0.0)
+                {
+                    SlVector3 b = a, c = a;
+                    c[0] += h_;
+                    b[2] += h_;
+                    meshPts.push_back(createVertexCR(phi, b, c, bVal, cVal));
+                    //meshPts.push_back(createVertex(b, c, bVal, cVal));
+                    yFace(i, j, k) = (int)meshPts.size() - 1;
+                }
+            }
+        }
+    }
 
-    //Traverse y Edges to look for intersections
-    /*for(i = 0, a[0] = lc_[0]; i < nx_; i++, a[0] = a[0] + h_)
-       {
+    //Traverse z faces to look for intersections.
+    for(i = 0, a[0] = lc_[0]; i < nx_ - 1; i++, a[0] = a[0] + h_)
+    {
         for(j = 0, a[1] = lc_[1]; j < ny_ - 1; j++, a[1] = a[1] + h_)
         {
-            for(k = 0, a[2] = lc_[2]; k < nz_; k++, a[2] = a[2] + h_)*/
-    ParallelFuncs::parallel_for_row_major<int>(0, nx_,
-                                               0, ny_ - 1,
-                                               0, nz_,
-                                               [&](int i, int j, int k)
-                                               {
-                                                   Real bVal = phi(i, j, k), cVal = phi(i, j + 1, k);
-                                                   if(bVal * cVal < 0.0)
-                                                   {
-                                                       SlVector3 a = lc_ + SlVector3(i, j, k) * h_;
-                                                       SlVector3 b = a, c = a;
-                                                       c[1] += h_;
-                                                       SlVector3 tmp = createVertexCR(phi, b, c, bVal, cVal);
-                                                       meshLock.lock();
-                                                       meshPts.push_back(tmp);
-                                                       meshLock.unlock();
-                                                       //meshPts.push_back(createVertex(b, c, bVal, cVal));
-                                                       yEdge(i, j, k) = (int)meshPts.size() - 1;
-                                                   }
-                                               });
+            for(k = 0, a[2] = lc_[2]; k < nz_; k++, a[2] = a[2] + h_)
+            {
+                Real bVal = phi(i + 1, j, k), cVal = phi(i, j + 1, k);
+                if(bVal * cVal < 0.0)
+                {
+                    SlVector3 b = a, c = a;
+                    c[1] += h_;
+                    b[0] += h_;
+                    meshPts.push_back(createVertexCR(phi, b, c, bVal, cVal));
+                    //meshPts.push_back(createVertex(b, c, bVal, cVal));
+                    zFace(i, j, k) = (int)meshPts.size() - 1;
+                }
+            }
+        }
+    }
+
+    //Traverse x Edges to look for intersections
+    for(i = 0, a[0] = lc_[0]; i < nx_ - 1; i++, a[0] = a[0] + h_)
+    {
+        for(j = 0, a[1] = lc_[1]; j < ny_; j++, a[1] = a[1] + h_)
+        {
+            for(k = 0, a[2] = lc_[2]; k < nz_; k++, a[2] = a[2] + h_)
+            {
+                Real bVal = phi(i, j, k), cVal = phi(i + 1, j, k);
+                if(bVal * cVal < 0.0)
+                {
+                    SlVector3 b = a, c = a;
+                    c[0] += h_;
+                    meshPts.push_back(createVertexCR(phi, b, c, bVal, cVal));
+                    //meshPts.push_back(createVertex(b, c, bVal, cVal));
+                    xEdge(i, j, k) = (int)meshPts.size() - 1;
+                }
+            }
+        }
+    }
+
+    //Traverse y Edges to look for intersections
+    for(i = 0, a[0] = lc_[0]; i < nx_; i++, a[0] = a[0] + h_)
+    {
+        for(j = 0, a[1] = lc_[1]; j < ny_ - 1; j++, a[1] = a[1] + h_)
+        {
+            for(k = 0, a[2] = lc_[2]; k < nz_; k++, a[2] = a[2] + h_)
+            {
+                Real bVal = phi(i, j, k), cVal = phi(i, j + 1, k);
+                if(bVal * cVal < 0.0)
+                {
+                    SlVector3 b = a, c = a;
+                    c[1] += h_;
+                    meshPts.push_back(createVertexCR(phi, b, c, bVal, cVal));
+                    //meshPts.push_back(createVertex(b, c, bVal, cVal));
+                    yEdge(i, j, k) = (int)meshPts.size() - 1;
+                }
+            }
+        }
+    }
 
     //Traverse z Edges to look for intersections
-    //for(i = 0, a[0] = lc_[0]; i < nx_; i++, a[0] = a[0] + h_)
-    //{
-    //    for(j = 0, a[1] = lc_[1]; j < ny_; j++, a[1] = a[1] + h_)
-    //    {
-    //        for(k = 0, a[2] = lc_[2]; k < nz_ - 1; k++, a[2] = a[2] + h_)
-    ParallelFuncs::parallel_for_row_major<int>(0, nx_,
-                                               0, ny_,
-                                               0, nz_ - 1,
-                                               [&](int i, int j, int k)
-                                               {
-                                                   Real bVal = phi(i, j, k), cVal = phi(i, j, k + 1);
-                                                   if(bVal * cVal < 0.0)
-                                                   {
-                                                       SlVector3 a = lc_ + SlVector3(i, j, k) * h_;
-                                                       SlVector3 b = a, c = a;
-                                                       c[2] += h_;
-                                                       SlVector3 tmp = createVertexCR(phi, b, c, bVal, cVal);
-                                                       meshLock.lock();
-                                                       meshPts.push_back(tmp);
-                                                       meshLock.unlock();
-                                                       //meshPts.push_back(createVertex(b, c, bVal, cVal));
-                                                       zEdge(i, j, k) = (int)meshPts.size() - 1;
-                                                   }
-                                               });
+    for(i = 0, a[0] = lc_[0]; i < nx_; i++, a[0] = a[0] + h_)
+    {
+        for(j = 0, a[1] = lc_[1]; j < ny_; j++, a[1] = a[1] + h_)
+        {
+            for(k = 0, a[2] = lc_[2]; k < nz_ - 1; k++, a[2] = a[2] + h_)
+            {
+                Real bVal = phi(i, j, k), cVal = phi(i, j, k + 1);
+                if(bVal * cVal < 0.0)
+                {
+                    SlVector3 b = a, c = a;
+                    c[2] += h_;
+                    meshPts.push_back(createVertexCR(phi, b, c, bVal, cVal));
+                    //meshPts.push_back(createVertex(b, c, bVal, cVal));
+                    zEdge(i, j, k) = (int)meshPts.size() - 1;
+                }
+            }
+        }
+    }
 
-    //for(i = 0, a[0] = lc_[0]; i < nx_ - 2; i++, a[0] = a[0] + h_)
-    //{
-    //    for(j = 0, a[1] = lc_[1]; j < ny_ - 2; j++, a[1] = a[1] + h_)
-    //    {
-    //        for(k = 0, a[2] = lc_[2]; k < nz_ - 2; k++, a[2] = a[2] + h_)
-    ParallelFuncs::parallel_for_row_major<int>(0, nx_ - 2,
-                                               0, ny_ - 2,
-                                               0, nz_ - 2,
-                                               [&](int i, int j, int k)
-                                               {
-                                                   int ip1 = i + 1, jp1 = j + 1, kp1 = k + 1, e04, e26, e15, e37, e01, e23, e45, e67, e02,
-                                                   e46, e13, e57, e12, e56, e24, e35, e14, e36, e16(-1);
-                                                   Real val0 = phi(i, j, k), val1 = phi(i, j, kp1), val2 = phi(i, jp1, k), val3 = phi(i, jp1, kp1),
-                                                   val4 = phi(ip1, j, k), val5 = phi(ip1, j, kp1), val6 = phi(ip1, jp1, k), val7 = phi(ip1, jp1, kp1);
-                                                   if(val1 * val6 < 0.0)
-                                                   {
-                                                       SlVector3 a = lc_ + SlVector3(i, j, k) * h_;
-                                                       SlVector3 b = a, c = a;
-                                                       b[2] += h_;
-                                                       c[0] += h_;
-                                                       c[1] += h_;
-                                                       SlVector3 tmp = createVertexCR(phi, b, c, val1, val6);
-                                                       meshLock.lock();
-                                                       meshPts.push_back(tmp);
-                                                       e16 = (int)meshPts.size() - 1;
-                                                       meshLock.unlock();
-                                                       //meshPts.push_back(createVertex(b, c, val1, val6));
-                                                   }
 
-                                                   e12 = xFace(i, j, k); e56 = xFace(ip1, j, k);
-                                                   e14 = yFace(i, j, k); e36 = yFace(i, jp1, k);
-                                                   e24 = zFace(i, j, k); e35 = zFace(i, j, kp1);
-                                                   e04 = xEdge(i, j, k); e26 = xEdge(i, jp1, k); e15 = xEdge(i, j, kp1); e37 = xEdge(i, jp1, kp1);
-                                                   e02 = yEdge(i, j, k);
-                                                   e46 = yEdge(ip1, j, k);
-                                                   e13 = yEdge(i, j, kp1);
-                                                   e57 = yEdge(ip1, j, kp1);
-                                                   e01 = zEdge(i, j, k); e23 = zEdge(i, jp1, k); e45 = zEdge(ip1, j, k); e67 = zEdge(ip1, jp1, k);
-                                                   doTet(e02, e04, e01, e24, e12, e14, val0, val2, val4, val1, triangles, meshPts);
-                                                   doTet(e26, e16, e46, e12, e24, e14, val6, val2, val1, val4, triangles, meshPts);
-                                                   doTet(e26, e36, e16, e23, e12, e13, val6, val2, val3, val1, triangles, meshPts);
-                                                   doTet(e46, e16, e56, e14, e45, e15, val6, val4, val1, val5, triangles, meshPts);
-                                                   doTet(e16, e36, e56, e13, e15, e35, val6, val1, val3, val5, triangles, meshPts);
-                                                   doTet(e36, e67, e56, e37, e35, e57, val6, val3, val7, val5, triangles, meshPts);
-                                               });
-
-    triangles = triangles_;
+    for(i = 0, a[0] = lc_[0]; i < nx_ - 2; i++, a[0] = a[0] + h_)
+    {
+        for(j = 0, a[1] = lc_[1]; j < ny_ - 2; j++, a[1] = a[1] + h_)
+        {
+            for(k = 0, a[2] = lc_[2]; k < nz_ - 2; k++, a[2] = a[2] + h_)
+            {
+                int ip1 = i + 1, jp1 = j + 1, kp1 = k + 1, e04, e26, e15, e37, e01, e23, e45, e67, e02,
+                    e46, e13, e57, e12, e56, e24, e35, e14, e36, e16(-1);
+                Real val0 = phi(i, j, k), val1 = phi(i, j, kp1), val2 = phi(i, jp1, k), val3 = phi(i, jp1, kp1),
+                     val4 = phi(ip1, j, k), val5 = phi(ip1, j, kp1), val6 = phi(ip1, jp1, k), val7 = phi(ip1, jp1, kp1);
+                if(val1 * val6 < 0.0)
+                {
+                    SlVector3 b = a, c = a;
+                    b[2] += h_;
+                    c[0] += h_;
+                    c[1] += h_;
+                    meshPts.push_back(createVertexCR(phi, b, c, val1, val6));
+                    //meshPts.push_back(createVertex(b, c, val1, val6));
+                    e16 = (int)meshPts.size() - 1;
+                }
+                e12 = xFace(i, j, k); e56 = xFace(ip1, j, k);
+                e14 = yFace(i, j, k); e36 = yFace(i, jp1, k);
+                e24 = zFace(i, j, k); e35 = zFace(i, j, kp1);
+                e04 = xEdge(i, j, k); e26 = xEdge(i, jp1, k); e15 = xEdge(i, j, kp1); e37 = xEdge(i, jp1, kp1);
+                e02 = yEdge(i, j, k);
+                e46 = yEdge(ip1, j, k);
+                e13 = yEdge(i, j, kp1);
+                e57 = yEdge(ip1, j, kp1);
+                e01 = zEdge(i, j, k); e23 = zEdge(i, jp1, k); e45 = zEdge(ip1, j, k); e67 = zEdge(ip1, jp1, k);
+                doTet(e02, e04, e01, e24, e12, e14, val0, val2, val4, val1, triangles, meshPts);
+                doTet(e26, e16, e46, e12, e24, e14, val6, val2, val1, val4, triangles, meshPts);
+                doTet(e26, e36, e16, e23, e12, e13, val6, val2, val3, val1, triangles, meshPts);
+                doTet(e46, e16, e56, e14, e45, e15, val6, val4, val1, val5, triangles, meshPts);
+                doTet(e16, e36, e56, e13, e15, e35, val6, val1, val3, val5, triangles, meshPts);
+                doTet(e36, e67, e56, e37, e35, e57, val6, val3, val7, val5, triangles, meshPts);
+            }
+        }
+    }
     //std::cout<<"vertices: "<<meshPts.size()<<" triangles: "<<triangles.size()<<std::endl;
 }

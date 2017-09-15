@@ -28,33 +28,26 @@
 
 #include "slUtil.H"
 #include "slArray.H"
+
 #include "Common.h"
-#include "ParallelObjects.h"
 
-
-class MarchingTet {
+class MarchingTet
+{
 public:
-	MarchingTet(int nx, int ny, int nz, Real h, const SlVector3 &lc);
-	void buildTriangleMesh(const SlArray3D<Real> &phi, std::vector<SlTri> &triangles, std::vector<SlVector3> &meshPts);
+    MarchingTet(int nx, int ny, int nz, Real h, const SlVector3 &lc);
+    void buildTriangleMesh(const SlArray3D<Real> &phi, std::vector<SlTri> &triangles, std::vector<SlVector3> &meshPts);
 
 protected:
-    ParallelObjects::SpinLock meshLock;
-    ParallelObjects::SpinLock triLock;
-    std::vector<SlTri> triangles_;
+    int nx_, ny_, nz_;
+    Real h_;
+    SlVector3 lc_, uc_;
+    SlArray3D<int> xFace, yFace, zFace, xEdge, yEdge, zEdge;
 
-
-	int nx_, ny_, nz_;
-	Real h_;
-	SlVector3 lc_, uc_;
-	SlArray3D<int> xFace, yFace, zFace, xEdge, yEdge, zEdge;
-
-	SlVector3 createVertex(SlVector3 &a, SlVector3 &b, Real aPhi, Real bPhi);
-	SlVector3 createVertexCR(const SlArray3D<Real> &phi, SlVector3 &a, SlVector3 &b, Real aPhi, Real bPhi);
-	Real catmullrom(const SlArray3D<Real> &phi, SlVector3 &x);
-	bool doTet(int e1, int e2, int e3, int e4, int e5, int e6, Real val0, Real val1, Real val2, Real val3,
-						 std::vector<SlTri> &triangles, std::vector<SlVector3> &meshPts) ;
-
-    void push_triangle(const SlTri& tri);
+    SlVector3 createVertex(SlVector3 &a, SlVector3 &b, Real aPhi, Real bPhi);
+    SlVector3 createVertexCR(const SlArray3D<Real> &phi, SlVector3 &a, SlVector3 &b, Real aPhi, Real bPhi);
+    Real catmullrom(const SlArray3D<Real> &phi, SlVector3 &x);
+    bool doTet(int e1, int e2, int e3, int e4, int e5, int e6, Real val0, Real val1, Real val2, Real val3,
+               std::vector<SlTri> &triangles, std::vector<SlVector3> &meshPts);
 };
 
 

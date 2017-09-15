@@ -11,7 +11,7 @@ MISC_FLAGS = -Wall
 
 #-----------------------------------------
 #Optimization ----------------------------
-OPT   = -O3 -flto  #-fast
+OPT   = -O3 -flto -std=c++11  #-fast
 
 #-----------------------------------------
 # Debug mode -----------------------------
@@ -27,14 +27,14 @@ TARGETS = particleskinner
 OBJECTS = main.o smoothingGrid.o marchingTet.o kdTree.o slMatrix.o slVector.o slUtil.o
 
 #-----------------------------------------
-INCLUDE = -IExternals/tbb_osx/include
-LIBS = -ltbb -LExternals/tbb_osx/lib
+#INCLUDE = -IExternals/tbb_osx/include
+#LIBS = -ltbb -LExternals/tbb_osx/lib
 
 
-#INCLUDE = -IExternals/tbb_linux/include
-#LIBS = -ltbb -LExternals/tbb_linux/lib/intel64/gcc4.7
+INCLUDE = -IExternals/tbb_linux/include
+LIBS = -ltbb -LExternals/tbb_linux/lib/intel64/gcc4.7 -lpthread
 #INCS =
-CCOPTS = $(OPT) $(MISC_FLAGS) $(DEBUG) $(INCS)
+CCOPTS = $(OPT) $(MISC_FLAGS) $(DEBUG) $(INCLUDE)
 LDOPTS = $(OPT) $(MISC_FLAGS) $(DEBUG) $(LIBS)
 
 #-----------------------------------------
@@ -50,7 +50,7 @@ clean:
 #-----------------------------------------
 
 $(TARGETS): $(OBJECTS)
-	$(CC) $(LDOPTS) $(OBJECTS) $(INCLUDE) $(LIBS) -std=c++11 -flto -o particleskinner
+	$(CC) $(LDOPTS) $(OBJECTS) $(LIBS) -flto -o particleskinner
 
 #-----------------------------------------
 .C.o:
@@ -66,7 +66,7 @@ $(TARGETS): $(OBJECTS)
 	$(CC)  $(LDOPTS) $(OBJS) $(OBJECTS) $< $(LIBS) -o $@
 
 .C: $(OBJECTS)
-	$(CC) $(LDOPTS)   $(OBJS) $(OBJECTS) $< $(LIBS) $(FOR_LIB) -o $@
+	$(CC) $(LDOPTS)  $(OBJS) $(OBJECTS) $< $(LIBS) $(FOR_LIB) -o $@
 
 #-----------------------------------------
 #-----------------------------------------

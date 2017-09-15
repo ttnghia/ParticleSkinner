@@ -24,7 +24,6 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-#include "getopt.h"
 #include "smoothingGrid.H"
 #include <iostream>
 #include <fstream>
@@ -35,6 +34,11 @@
 
 #include <tbb/tbb.h>
 
+
+#if defined(_WIN32) || defined(_WIN64)
+#  include "getopt.h"
+#  include <windows.h>
+//#  include <time.h>
 
 int gettimeofday(struct timeval* tp, struct timezone* tzp)
 {
@@ -56,6 +60,15 @@ int gettimeofday(struct timeval* tp, struct timezone* tzp)
     tp->tv_usec = (long)(system_time.wMilliseconds * 1000);
     return 0;
 }
+
+#else
+#  include <getopt.h>
+#  include <sys/time.h>
+#endif
+
+
+
+
 
 #if 1
 // sph
@@ -82,7 +95,7 @@ bool readfile(char* inPosFile, char* inVelFile, std::vector<SlVector3>& particle
     velocities.reserve(numPoints);
     radii.reserve(numPoints);
 
-    for(int i = 0; i < numPoints; i++)
+    for(unsigned int i = 0; i < numPoints; i++)
     {
         float x, y, z, xvel, yvel, zvel;
 
@@ -371,7 +384,7 @@ int main(int argc, char** argv)
 
 
 
-    static tbb::task_scheduler_init threadInit = tbb::task_scheduler_init::automatic;
+    tbb::task_scheduler_init threadInit(tbb::task_scheduler_init::automatic);
     (void)threadInit;
 
 

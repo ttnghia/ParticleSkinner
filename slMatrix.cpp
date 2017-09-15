@@ -42,7 +42,7 @@ std::istream& operator >>(std::istream& strm, SlMatrix3x3& m)
     std::ios::fmtflags orgFlags = strm.setf(std::ios::skipws);
     eatChar('[', strm);
 
-    register int r, c;
+    int r, c;
 
     for(r = 0; r < 3; r++)
     {
@@ -63,7 +63,7 @@ std::istream& operator >>(std::istream& strm, SlMatrix3x3& m)
 std::ostream& operator <<(std::ostream& strm, const SlMatrix3x3& m)
 {
     strm << "[";
-    register int r, c;
+    int r, c;
 
     for(r = 0; r < 3; r++)
     {
@@ -88,7 +88,7 @@ SlMatrix3x3& SlMatrix3x3::inplaceMultPre(const SlMatrix3x3& that)
 {
     SlVector3 tmp;
 
-    register int i;
+    int i;
 
     for(i = 0; i < 3; i++)
     {
@@ -118,7 +118,7 @@ SlMatrix3x3& SlMatrix3x3::inplaceMultPost(const SlMatrix3x3& that)
 {
     SlVector3 tmp;
 
-    register int i;
+    int i;
 
     for(i = 0; i < 3; i++)
     {
@@ -153,7 +153,7 @@ static inline Real smFabs(Real x)
 
 static void rowswap(SlMatrix3x3& m, int i, int j)
 {
-    register Real tmp;
+    Real tmp;
     SWAP(m(i, 0), m(j, 0));
     SWAP(m(i, 1), m(j, 1));
     SWAP(m(i, 2), m(j, 2));
@@ -178,7 +178,7 @@ SlMatrix3x3 inverse(const SlMatrix3x3& a)
             std::cerr << "Inverse of singular matrix\n" << std::flush;
             abort();
         }
-        register Real div = 1.0 / _a(j, j);
+        Real div = 1.0 / _a(j, j);
         _b(j, 0) *= div;
         _b(j, 1) *= div;
         _b(j, 2) *= div;
@@ -189,7 +189,7 @@ SlMatrix3x3 inverse(const SlMatrix3x3& a)
         {
             if(i != j)
             {
-                register Real tmp = _a(i, j);
+                Real tmp = _a(i, j);
                 _b(i, 0) -= tmp * _b(j, 0);
                 _b(i, 1) -= tmp * _b(j, 1);
                 _b(i, 2) -= tmp * _b(j, 2);
@@ -838,7 +838,7 @@ void symeig_3(const SlMatrix3x3& a, SlVector3& vals, SlMatrix3x3& vecs)
 
         return;
     }
-    else         /*---- if here, we have a Real root ----*/
+    else        /*---- if here, we have a Real root ----*/
 
     {           /* make sure that we have lam1=lam2 and lam3 is the outlier */
         if(d13 < d12 && d13 < d23) SMEIG_SWAP(lam2, lam3);
@@ -907,7 +907,7 @@ std::istream& operator >>(std::istream& strm, SlMatrix2x2& m)
     std::ios::fmtflags orgFlags = strm.setf(std::ios::skipws);
     eatChar('[', strm);
 
-    register int r, c;
+    int r, c;
 
     for(r = 0; r < 2; r++)
     {
@@ -928,7 +928,7 @@ std::istream& operator >>(std::istream& strm, SlMatrix2x2& m)
 std::ostream& operator <<(std::ostream& strm, const SlMatrix2x2& m)
 {
     strm << "[";
-    register int r, c;
+    int r, c;
 
     for(r = 0; r < 2; r++)
     {
@@ -949,8 +949,8 @@ std::ostream& operator <<(std::ostream& strm, const SlMatrix2x2& m)
 
 SlMatrix2x2& SlMatrix2x2::inplaceMultPre(const SlMatrix2x2& that)
 {
-    SlVector2    tmp;
-    register int i;
+    SlVector2 tmp;
+    int       i;
 
     for(i = 0; i < 2; i++)
     {
@@ -968,8 +968,8 @@ SlMatrix2x2& SlMatrix2x2::inplaceMultPre(const SlMatrix2x2& that)
 
 SlMatrix2x2& SlMatrix2x2::inplaceMultPost(const SlMatrix2x2& that)
 {
-    SlVector2    tmp;
-    register int i;
+    SlVector2 tmp;
+    int       i;
     for(i = 0; i < 2; i++)
     {
         tmp[0] = (data[i][0] * that.data[0][0] +

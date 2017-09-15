@@ -30,6 +30,7 @@
 #include <fstream>
 #include <iostream>
 #include <cmath>
+#include <algorithm>
 
 #include "Common.h"
 #include "ParallelFuncs.h"
@@ -174,8 +175,8 @@ bool SmoothingGrid::computeG(const std::vector<SlVector3>& particles, Real rmax,
 
                                             Real maxT = vals[0] / maxStretch;
                                             vals[0] = 1.0 / (vals[0]);
-                                            vals[1] = 1.0 / (fmax<Real>(vals[1], maxT));
-                                            vals[2] = 1.0 / (fmax<Real>(vals[2], maxT));
+                                            vals[1] = 1.0 / (fmax(vals[1], maxT));
+                                            vals[2] = 1.0 / (fmax(vals[2], maxT));
 
                                             vals /= cbrt(vals[0] * vals[1] * vals[2]); // make sure det(G) = 1
                                                                                        // smooth falloff with decreasing # of neighbors
@@ -673,7 +674,7 @@ bool SmoothingGrid::stepMeanCurvature(Real dt)
 
 bool SmoothingGrid::stepLaplacian(Real dt)
 {
-    Real change = 0.0, updateBand = 4 * h;
+    Real /*change = 0.0, */ updateBand = 4 * h;
 
     /*for(int i = 2; i < nx - 2; i++)
        {
@@ -741,9 +742,9 @@ void sweepPoint(SlArray3D<Real>& newPhi, SlArray3D<char>& accepted, int i, int j
             accepted(i, j - 1, k) + accepted(i, j + 1, k) + accepted(i, j, k - 1) + accepted(i, j, k + 1);
     if(!s) return;
 
-    Real a = fmin<Real>(fabs(newPhi(i - 1, j, k)), fabs(newPhi(i + 1, j, k)));
-    Real b = fmin<Real>(fabs(newPhi(i, j - 1, k)), fabs(newPhi(i, j + 1, k)));
-    Real c = fmin<Real>(fabs(newPhi(i, j, k - 1)), fabs(newPhi(i, j, k + 1)));
+    Real a = fmin(fabs(newPhi(i - 1, j, k)), fabs(newPhi(i + 1, j, k)));
+    Real b = fmin(fabs(newPhi(i, j - 1, k)), fabs(newPhi(i, j + 1, k)));
+    Real c = fmin(fabs(newPhi(i, j, k - 1)), fabs(newPhi(i, j, k + 1)));
     sort3val(a, b, c);
     Real x = a + h;
     if(x > b)
@@ -814,12 +815,12 @@ void redistance(SlArray3D<Real>& phi, SlArray3D<Real>& newPhi, SlArray3D<char>& 
                                                        }
                                                        else
                                                        {
-                                                           if(fabs(accepted(i, j, k)) == 0)
+                                                           if(std::abs(accepted(i, j, k)) == 0)
                                                            {
                                                                newPhi(i, j, k) = x;
                                                                accepted(i, j, k) = sign(newPhi(i, j, k)) * 3;
                                                            }
-                                                           if(fabs(accepted(i, j + 1, k)) == 0)
+                                                           if(std::abs(accepted(i, j + 1, k)) == 0)
                                                            {
                                                                newPhi(i, j + 1, k) = y;
                                                                accepted(i, j + 1, k) = sign(newPhi(i, j + 1, k)) * 3;
@@ -838,12 +839,12 @@ void redistance(SlArray3D<Real>& phi, SlArray3D<Real>& newPhi, SlArray3D<char>& 
                                                        }
                                                        else
                                                        {
-                                                           if(fabs(accepted(i, j, k)) == 0)
+                                                           if(std::abs(accepted(i, j, k)) == 0)
                                                            {
                                                                newPhi(i, j, k) = x;
                                                                accepted(i, j, k) = sign(newPhi(i, j, k)) * 3;
                                                            }
-                                                           if(fabs(accepted(i, j, k + 1)) == 0)
+                                                           if(std::abs(accepted(i, j, k + 1)) == 0)
                                                            {
                                                                newPhi(i, j, k + 1) = y;
                                                                accepted(i, j, k + 1) = sign(newPhi(i, j, k + 1)) * 3;

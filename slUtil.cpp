@@ -142,7 +142,7 @@ void sl::read(ifstream& in, std::vector<int>& l)
 
 void sl::write(ofstream& out, const std::vector<int>& l)
 {
-    unsigned int                     s = l.size();
+    unsigned int                     s = (unsigned int)l.size();
     std::vector<int>::const_iterator i;
     out.write((char*)&s, sizeof(int));
     for(i = l.begin(); i != l.end(); i++)

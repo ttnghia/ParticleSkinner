@@ -26,11 +26,15 @@
 
 #include "smoothingGrid.H"
 #include "slUtil.H"
-#include <time.h>
 #include <float.h>
 #include <fstream>
 #include <iostream>
 #include <cmath>
+
+#include "Common.h"
+
+#include "ParallelFuncs.h"
+#include "ParallelSTL.h"
 
 inline Real sqr(Real x) { return (x * x); };
 
@@ -522,38 +526,48 @@ bool SmoothingGrid::computeBiharmonic()
 Real SmoothingGrid::stepBiharmonic(Real dt)
 {
     Real change = 0.0, updateBand = 3 * h;
-    for(int i = 2; i < nx - 2; i++)
-    {
+
+    /*for(int i = 2; i < nx - 2; i++)
+       {
         for(int j = 2; j < ny - 2; j++)
         {
-            for(int k = 2; k < nz - 2; k++)
-            {
-                if(fabs(phi(i, j, k)) <= updateBand)
-                {
-                    Real phix = cdX(i, j, k, phi, nx, h), phiy = cdY(i, j, k, phi, ny, h), phiz = cdZ(i, j, k, phi, nz, h);
-                    Real gradMag    = sqrt(sqr(phix) + sqr(phiy) + sqr(phiz));
-                    Real val        = biharmonic(i, j, k);
-                    Real updatedPhi = phi(i, j, k) - val * dt * gradMag;
-                    updatedPhi   = fmin(updatedPhi, phi_min(i, j, k));
-                    updatedPhi   = fmax(updatedPhi, phi_max(i, j, k));
-                    phi(i, j, k) = updatedPhi;
-                    change      += fabs(val);
-                }
-            }
-        }
-    }
-    if(flags & VERBOSE) std::cout << "Change in this iteration " << change << std::endl;
+            for(int k = 2; k < nz - 2; k++)*/
+    ParallelFuncs::parallel_for<int>(2, nx - 2,
+                                     2, ny - 2,
+                                     2, nz - 2,
+                                     [&](int k, int j, int i)
+                                     {
+                                         if(fabs(phi(i, j, k)) <= updateBand)
+                                         {
+                                             Real phix = cdX(i, j, k, phi, nx, h), phiy = cdY(i, j, k, phi, ny, h), phiz = cdZ(i, j, k, phi, nz, h);
+                                             Real gradMag = sqrt(sqr(phix) + sqr(phiy) + sqr(phiz));
+                                             Real val = biharmonic(i, j, k);
+                                             Real updatedPhi = phi(i, j, k) - val * dt * gradMag;
+                                             updatedPhi = fmin(updatedPhi, phi_min(i, j, k));
+                                             updatedPhi = fmax(updatedPhi, phi_max(i, j, k));
+                                             phi(i, j, k) = updatedPhi;
+                                             //change += fabs(val);
+                                         }
+                                     });
+
+    static int iter = 0;
+    ++iter;
+    //if(flags & VERBOSE) std::cout << "Iter: " << iter << ", change: " << change << std::endl;
+    if(flags & VERBOSE) std::cout << "Iter: " << iter << std::endl;
     return change;
 }
 
 bool SmoothingGrid::doBiharmonicSmoothing(int iter, Real dt, int redistanceFrequency)
 {
+    timeval startTime, endTime;
+
     redistance(phi, tempPhi, accepted, h);
     for(int i = 0; i < iter; i++)
     {
         computeLaplacian();
         computeBiharmonic();
         stepBiharmonic(dt);
+
         if(i % redistanceFrequency == 0 && redistanceFrequency != 0 && i != 0)
         {
             redistance(phi, tempPhi, accepted, h);
@@ -642,12 +656,13 @@ bool SmoothingGrid::stepLaplacian(Real dt)
                     updatedPhi   = fmin(updatedPhi, phi_min(i, j, k));
                     updatedPhi   = fmax(updatedPhi, phi_max(i, j, k));
                     phi(i, j, k) = updatedPhi;
-                    change      += fabs(val);
+                    //change      += fabs(val);
                 }
             }
         }
     }
-    if(flags & VERBOSE) std::cout << "Change in this iteration " << change << std::endl;
+    //if(flags & VERBOSE) std::cout << "Change in this iteration " << change << std::endl;
+    //if(flags & VERBOSE) std::cout << "Change in this iteration " << change << std::endl;
     return true;
 }
 
@@ -706,6 +721,8 @@ void sweepPoint(SlArray3D<Real>& newPhi, SlArray3D<char>& accepted, int i, int j
 
 void redistance(SlArray3D<Real>& phi, SlArray3D<Real>& newPhi, SlArray3D<char>& accepted, Real h)
 {
+    printf("Doing redistance...\n");
+
     int nx = phi.nx();
     int ny = phi.ny();
     int nz = phi.nz();
@@ -795,6 +812,25 @@ void redistance(SlArray3D<Real>& phi, SlArray3D<Real>& newPhi, SlArray3D<char>& 
         }
     }
 
+#if 1
+    bool forward = true;
+
+    for(int l = 0; l < 8; ++l)
+    {
+        ParallelFuncs::parallel_for<int>(1, nx - 1,
+                                         1, ny - 1,
+                                         1, nz - 1,
+                                         [&](int ii, int jj, int kk)
+                                         {
+                                             int i = forward ? ii : nx - ii - 1;
+                                             int j = forward ? jj : ny - jj - 1;
+                                             int k = forward ? kk : nz - kk - 1;
+
+                                             if(abs(accepted(i, j, k)) % 2 != 1) sweepPoint(newPhi, accepted, i, j, k, h);
+                                         });
+        forward = !forward;
+    }
+#else
     // sweeping
     for(int i = 1; i < nx - 1; i++)
         for(int j = 1; j < ny - 1; j++)
@@ -828,6 +864,7 @@ void redistance(SlArray3D<Real>& phi, SlArray3D<Real>& newPhi, SlArray3D<char>& 
         for(int j = ny - 2; j > 0; j--)
             for(int k = nz - 2; k > 0; k--)
                 if(abs(accepted(i, j, k)) % 2 != 1) sweepPoint(newPhi, accepted, i, j, k, h);
+#endif
 
     phi = newPhi;
 }

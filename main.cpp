@@ -28,7 +28,6 @@
 #include "smoothingGrid.H"
 #include <iostream>
 #include <fstream>
-#include <time.h>
 #include "marchingTet.H"
 #include "Common.h"
 
@@ -36,7 +35,8 @@
 
 #include <tbb/tbb.h>
 
-int gettimeofday(struct timeval* tp, struct timezone* tzp)
+
+inline int gettimeofday(struct timeval* tp, struct timezone* tzp)
 {
     // Note: some broken versions only have 8 trailing zero's, the correct epoch has 9 trailing zero's
     // This magic number is the number of 100 nanosecond intervals since January 1, 1601 (UTC)

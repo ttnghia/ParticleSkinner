@@ -504,21 +504,24 @@ SmoothingGrid::~SmoothingGrid()
 bool SmoothingGrid::computeLaplacian()
 {
     Real divisor = sqr(h), updateBand = 4 * h;
-    for(int i = 1; i < nx - 1; i++)
-    {
-        for(int j = 1; j < ny - 1; j++)
-        {
-            for(int k = 1; k < nz - 1; k++)
-            {
-                if(fabs(phi(i, j, k)) <= updateBand)
-                {
-                    laplacian(i, j, k) = (phi(i + 1, j, k) + phi(i - 1, j, k) + phi(i, j + 1, k)
-                                          + phi(i, j - 1, k) + phi(i, j, k + 1) + phi(i, j, k - 1)
-                                          - 6 * phi(i, j, k)) / divisor;
-                }
-            }
-        }
-    }
+
+    //for(int i = 1; i < nx - 1; i++)
+    //{
+    //    for(int j = 1; j < ny - 1; j++)
+    //    {
+    //        for(int k = 1; k < nz - 1; k++)
+    ParallelFuncs::parallel_for<int>(1, nx - 1,
+                                     1, ny - 1,
+                                     1, nz - 1,
+                                     [&](int i, int j, int k)
+                                     {
+                                         if(fabs(phi(i, j, k)) <= updateBand)
+                                         {
+                                             laplacian(i, j, k) = (phi(i + 1, j, k) + phi(i - 1, j, k) + phi(i, j + 1, k)
+                                                                   + phi(i, j - 1, k) + phi(i, j, k + 1) + phi(i, j, k - 1)
+                                                                   - 6 * phi(i, j, k)) / divisor;
+                                         }
+                                     });
 
     return true;
 }
@@ -526,48 +529,60 @@ bool SmoothingGrid::computeLaplacian()
 bool SmoothingGrid::computeBiharmonic()
 {
     Real divider = sqr(h), updateBand = 3 * h;
-    for(int i = 2; i < nx - 2; i++)
-    {
-        for(int j = 2; j < ny - 2; j++)
-        {
-            for(int k = 2; k < nz - 2; k++)
-            {
-                if(fabs(phi(i, j, k)) <= updateBand)
-                {
-                    biharmonic(i, j, k) = (laplacian(i + 1, j, k) + laplacian(i - 1, j, k) + laplacian(i, j + 1, k)
-                                           + laplacian(i, j - 1, k) + laplacian(i, j, k + 1) + laplacian(i, j, k - 1)
-                                           - 6 * laplacian(i, j, k)) / divider;
-                }
-            }
-        }
-    }
+    //for(int i = 2; i < nx - 2; i++)
+    //{
+    //    for(int j = 2; j < ny - 2; j++)
+    //    {
+    //        for(int k = 2; k < nz - 2; k++)
+    ParallelFuncs::parallel_for<int>(2, nx - 2,
+                                     2, ny - 2,
+                                     2, nz - 2,
+                                     [&](int i, int j, int k)
+                                     {
+                                         if(fabs(phi(i, j, k)) <= updateBand)
+                                         {
+                                             biharmonic(i, j, k) = (laplacian(i + 1, j, k) + laplacian(i - 1, j, k) + laplacian(i, j + 1, k)
+                                                                    + laplacian(i, j - 1, k) + laplacian(i, j, k + 1) + laplacian(i, j, k - 1)
+                                                                    - 6 * laplacian(i, j, k)) / divider;
+                                         }
+                                     });
+
     return true;
 }
 
 Real SmoothingGrid::stepBiharmonic(Real dt)
 {
     Real change = 0.0, updateBand = 3 * h;
-    for(int i = 2; i < nx - 2; i++)
-    {
-        for(int j = 2; j < ny - 2; j++)
-        {
-            for(int k = 2; k < nz - 2; k++)
-            {
-                if(fabs(phi(i, j, k)) <= updateBand)
-                {
-                    Real phix = cdX(i, j, k, phi, nx, h), phiy = cdY(i, j, k, phi, ny, h), phiz = cdZ(i, j, k, phi, nz, h);
-                    Real gradMag    = sqrt(sqr(phix) + sqr(phiy) + sqr(phiz));
-                    Real val        = biharmonic(i, j, k);
-                    Real updatedPhi = phi(i, j, k) - val * dt * gradMag;
-                    updatedPhi   = fmin(updatedPhi, phi_min(i, j, k));
-                    updatedPhi   = fmax(updatedPhi, phi_max(i, j, k));
-                    phi(i, j, k) = updatedPhi;
-                    change      += fabs(val);
-                }
-            }
-        }
-    }
-    if(flags & VERBOSE) std::cout << "Change in this iteration " << change << std::endl;
+
+
+    //for(int i = 2; i < nx - 2; i++)
+    //{
+    //    for(int j = 2; j < ny - 2; j++)
+    //    {
+    //        for(int k = 2; k < nz - 2; k++)
+    ParallelFuncs::parallel_for<int>(2, nx - 2,
+                                     2, ny - 2,
+                                     2, nz - 2,
+                                     [&](int i, int j, int k)
+                                     {
+                                         if(fabs(phi(i, j, k)) <= updateBand)
+                                         {
+                                             Real phix = cdX(i, j, k, phi, nx, h), phiy = cdY(i, j, k, phi, ny, h), phiz = cdZ(i, j, k, phi, nz, h);
+                                             Real gradMag = sqrt(sqr(phix) + sqr(phiy) + sqr(phiz));
+                                             Real val = biharmonic(i, j, k);
+                                             Real updatedPhi = phi(i, j, k) - val * dt * gradMag;
+                                             updatedPhi = fmin(updatedPhi, phi_min(i, j, k));
+                                             updatedPhi = fmax(updatedPhi, phi_max(i, j, k));
+                                             phi(i, j, k) = updatedPhi;
+                                             //change += fabs(val);
+                                         }
+                                     });
+
+    //if(flags & VERBOSE) std::cout << "Change in this iteration " << change << std::endl;
+
+    static int iter = 0;
+    ++iter;
+    if(flags & VERBOSE) std::cout << "Iter: " << iter << std::endl;
     return change;
 }
 

@@ -36,7 +36,7 @@
 #include <tbb/tbb.h>
 
 
-inline int gettimeofday(struct timeval* tp, struct timezone* tzp)
+int gettimeofday(struct timeval* tp, struct timezone* tzp)
 {
     // Note: some broken versions only have 8 trailing zero's, the correct epoch has 9 trailing zero's
     // This magic number is the number of 100 nanosecond intervals since January 1, 1601 (UTC)
@@ -186,7 +186,7 @@ int main(int argc, char** argv)
     unsigned int flags = 0;
     static int   verboseFlag = 0;
     bool         helpFlag = false;
-    int          iterLaplace = 15, iterBiharmonic = 200, redistanceFrequency = 50;
+    int          iterLaplace = 15, iterBiharmonic = 500, redistanceFrequency = 50;
     Real         rmin = -REAL_MAX, rmax = -REAL_MAX, rinit = -REAL_MAX, velGain = 1.0,
                  dtLaplace = -REAL_MAX, dtBiharmonic = -REAL_MAX, dtBiharmonicGain = 1.0;
     Real maxStretch = 4, rratio = 4;

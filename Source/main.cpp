@@ -70,24 +70,60 @@ int gettimeofday(struct timeval* tp, struct timezone* tzp)
 
 
 
+//#define RESOLUTION 512.0f
+
 #if 1
 // sph
 bool readfile(char* inPosFile, char* inVelFile, std::vector<SlVector3>& particles, std::vector<Real>& radii, std::vector<SlVector3>& velocities)
 {
-    unsigned int  numPoints;
-    unsigned int  numPointsInVelFile;
-    std::ifstream inPos(inPosFile, std::ios::in | std::ios::binary);
-    std::ifstream inVel(inVelFile, std::ios::in | std::ios::binary);
-    inPos.read((char*)&numPoints, sizeof(numPoints));
-    float radius;
-    inPos.read((char*)&radius, sizeof(float));
+    std::cout << "loading data from " << inPosFile << " ..." << std::endl;
 
-    inVel.read((char*)&numPointsInVelFile, sizeof(numPoints));
-    if(numPoints != numPointsInVelFile)
+    FILE* fp = nullptr;
+    fopen_s(&fp, inPosFile, "rb");
+    if(fp == nullptr)
     {
-        printf("Error: inconsistent number of particles in pos file aned vel file.\n");
+        printf("Cannot read file!\n");
         exit(EXIT_FAILURE);
     }
+
+
+    float wMin[3];
+    float wMax[3];
+    int   numPoints;
+    fread(&numPoints, sizeof(int), 1, fp);
+
+
+
+    fread(&wMin[0], sizeof(float), 1, fp);
+    fread(&wMin[1], sizeof(float), 1, fp);
+    fread(&wMin[2], sizeof(float), 1, fp);
+    fread(&wMax[0], sizeof(float), 1, fp);
+    fread(&wMax[1], sizeof(float), 1, fp);
+    fread(&wMax[2], sizeof(float), 1, fp);
+
+    float dtx = wMax[0] - wMin[0];
+    float dty = wMax[1] - wMin[1];
+    float dtz = wMax[2] - wMin[2];
+
+    unsigned short outputBuf[3];
+    for(int pi = 0; pi < numPoints; pi++)
+    {
+        fread(&outputBuf[0], sizeof(unsigned short), 3, fp);
+
+        float x, y, z;
+
+        x = outputBuf[0] / 65535.0f * dtx + wMin[0];
+        y = outputBuf[1] / 65535.0f * dty + wMin[1];
+        z = outputBuf[2] / 65535.0f * dtz + wMin[2];
+
+        particles.push_back(SlVector3(x, y, z));
+        velocities.push_back(SlVector3(0, 0, 0));
+        radii.push_back(0.25);
+    }
+
+    fclose(fp);
+
+
 
     printf("Num particles: %u\n", numPoints);
 
@@ -95,23 +131,6 @@ bool readfile(char* inPosFile, char* inVelFile, std::vector<SlVector3>& particle
     velocities.reserve(numPoints);
     radii.reserve(numPoints);
 
-    for(unsigned int i = 0; i < numPoints; i++)
-    {
-        float x, y, z, xvel, yvel, zvel;
-
-        inPos.read((char*)&x, sizeof(x));
-        inPos.read((char*)&y, sizeof(y));
-        inPos.read((char*)&z, sizeof(z));
-
-        inVel.read((char*)&xvel, sizeof(x));
-        inVel.read((char*)&yvel, sizeof(y));
-        inVel.read((char*)&zvel, sizeof(z));
-
-
-        particles.push_back(SlVector3(x, y, z));
-        velocities.push_back(SlVector3(xvel, yvel, zvel));
-        radii.push_back(radius);
-    }
 
     return true;
 }

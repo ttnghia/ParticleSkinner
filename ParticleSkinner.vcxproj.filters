@@ -15,71 +15,68 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="kdTree.cpp">
+    <ClCompile Include="Source\kdTree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="Source\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="marchingTet.cpp">
+    <ClCompile Include="Source\marchingTet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="slMatrix.cpp">
+    <ClCompile Include="Source\slMatrix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="slUtil.cpp">
+    <ClCompile Include="Source\slUtil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="slVector.cpp">
+    <ClCompile Include="Source\slVector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="smoothingGrid.cpp">
+    <ClCompile Include="Source\smoothingGrid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="kdTree.H">
+    <ClInclude Include="Source\Common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="marchingTet.H">
+    <ClInclude Include="Source\kdTree.H">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="slArray.H">
+    <ClInclude Include="Source\marchingTet.H">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="slIO.H">
+    <ClInclude Include="Source\ParallelFuncs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="slMatrix.H">
+    <ClInclude Include="Source\ParallelObjects.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="slUtil.H">
+    <ClInclude Include="Source\ParallelSTL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="slVector.H">
+    <ClInclude Include="Source\slArray.H">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="smoothingGrid.H">
+    <ClInclude Include="Source\slIO.H">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ParallelFuncs.h">
+    <ClInclude Include="Source\slMatrix.H">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ParallelObjects.h">
+    <ClInclude Include="Source\slUtil.H">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ParallelSTL.h">
+    <ClInclude Include="Source\slVector.H">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Common.h">
+    <ClInclude Include="Source\smoothingGrid.H">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Makefile" />
-    <None Include="skin.sh" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="readme.txt" />
+    <None Include="Source\Makefile" />
+    <None Include="Source\skin.sh" />
   </ItemGroup>
 </Project>

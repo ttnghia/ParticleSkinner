@@ -27,12 +27,12 @@ TARGETS = particleskinner
 OBJECTS = main.o smoothingGrid.o marchingTet.o kdTree.o slMatrix.o slVector.o slUtil.o
 
 #-----------------------------------------
-#INCLUDE = -IExternals/tbb_osx/include
-#LIBS = -ltbb -LExternals/tbb_osx/lib
+#INCLUDE = -I../Libs/tbb_osx/include
+#LIBS = -ltbb -L../Libs/tbb_osx/lib
 
 
-INCLUDE = -IExternals/tbb_linux/include
-LIBS = -ltbb -LExternals/tbb_linux/lib/intel64/gcc4.7 -lpthread
+INCLUDE = -I../Libs/tbb_linux/include
+LIBS = -ltbb -L../Libs/tbb_linux/lib/intel64/gcc4.7 -lpthread
 #INCS =
 CCOPTS = $(OPT) $(MISC_FLAGS) $(DEBUG) $(INCLUDE)
 LDOPTS = $(OPT) $(MISC_FLAGS) $(DEBUG) $(LIBS)

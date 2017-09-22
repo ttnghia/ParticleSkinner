@@ -8,4 +8,7 @@
     <LocalDebuggerCommandArguments>0.005 Data/frame.0001.pos Data/frame.0001.vel Data/frame.0001.obj</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
+  <PropertyGroup>
+    <ShowAllFiles>true</ShowAllFiles>
+  </PropertyGroup>
 </Project>

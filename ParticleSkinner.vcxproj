@@ -44,15 +44,15 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)Build\$(Configuration)\</OutDir>
-    <IntDir>D:\Scratch\MSVC-Build\$(SolutionName)\$(ProjectName)\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)Externals\tbb_win\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <LibraryPath>$(SolutionDir)Externals\tbb_win\lib\intel64\vc14;$(LibraryPath)</LibraryPath>
+    <IntDir>D:\Scratch\ProjectBuilds\$(SolutionName)\$(ProjectName)\$(Configuration)\</IntDir>
+    <IncludePath>$(SolutionDir)Libs\tbb_win\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>$(SolutionDir)Libs\tbb_win\lib\intel64\vc14;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)Build\$(Configuration)\</OutDir>
-    <IntDir>D:\Scratch\MSVC-Build\$(SolutionName)\$(ProjectName)\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)Externals\tbb_win\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <LibraryPath>$(SolutionDir)Externals\tbb_win\lib\intel64\vc14;$(LibraryPath)</LibraryPath>
+    <IntDir>D:\Scratch\ProjectBuilds\$(SolutionName)\$(ProjectName)\$(Configuration)\</IntDir>
+    <IncludePath>$(SolutionDir)Libs\tbb_win\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>$(SolutionDir)Libs\tbb_win\lib\intel64\vc14;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -85,34 +85,31 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="kdTree.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="marchingTet.cpp" />
-    <ClCompile Include="slMatrix.cpp" />
-    <ClCompile Include="slUtil.cpp" />
-    <ClCompile Include="slVector.cpp" />
-    <ClCompile Include="smoothingGrid.cpp" />
+    <ClCompile Include="Source\kdTree.cpp" />
+    <ClCompile Include="Source\main.cpp" />
+    <ClCompile Include="Source\marchingTet.cpp" />
+    <ClCompile Include="Source\slMatrix.cpp" />
+    <ClCompile Include="Source\slUtil.cpp" />
+    <ClCompile Include="Source\slVector.cpp" />
+    <ClCompile Include="Source\smoothingGrid.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Common.h" />
-    <ClInclude Include="kdTree.H" />
-    <ClInclude Include="marchingTet.H" />
-    <ClInclude Include="ParallelFuncs.h" />
-    <ClInclude Include="ParallelObjects.h" />
-    <ClInclude Include="ParallelSTL.h" />
-    <ClInclude Include="slArray.H" />
-    <ClInclude Include="slIO.H" />
-    <ClInclude Include="slMatrix.H" />
-    <ClInclude Include="slUtil.H" />
-    <ClInclude Include="slVector.H" />
-    <ClInclude Include="smoothingGrid.H" />
+    <ClInclude Include="Source\Common.h" />
+    <ClInclude Include="Source\kdTree.H" />
+    <ClInclude Include="Source\marchingTet.H" />
+    <ClInclude Include="Source\ParallelFuncs.h" />
+    <ClInclude Include="Source\ParallelObjects.h" />
+    <ClInclude Include="Source\ParallelSTL.h" />
+    <ClInclude Include="Source\slArray.H" />
+    <ClInclude Include="Source\slIO.H" />
+    <ClInclude Include="Source\slMatrix.H" />
+    <ClInclude Include="Source\slUtil.H" />
+    <ClInclude Include="Source\slVector.H" />
+    <ClInclude Include="Source\smoothingGrid.H" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Makefile" />
-    <None Include="skin.sh" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="readme.txt" />
+    <None Include="Source\Makefile" />
+    <None Include="Source\skin.sh" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
